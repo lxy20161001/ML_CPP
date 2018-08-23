@@ -63,11 +63,6 @@ public:
         return MinVector<A>(newVec);
     }
 
-    int size() {
-        return vec.size();
-    }
-
-
     int row_num() {
         return this->shape()[0];
     }
@@ -96,7 +91,6 @@ public:
             }
         }
         return MinMatrix<A>(newVec);
-
     }
 
     MinMatrix<A> operator+(MinMatrix<A> &matrix) {
