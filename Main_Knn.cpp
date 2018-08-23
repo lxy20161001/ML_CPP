@@ -1,9 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include "Numpy_Cpp/Heap/RBTree.h"
-#include "Numpy_Cpp/Numpy_Cpp.h"
-#include "Numpy_Cpp/LinearSystem.h"
+#include "RBTree.h"
+#include "Numpy_Cpp.h"
+#include "LinearSystem.h"
 
 using namespace std;
 
