@@ -8,7 +8,7 @@
 #include "MinVector.h"
 #include "MinMatrix.h"
 #include "SortList.h"
-#include "Heap/RBTree.h"
+#include "RBTree.h"
 
 template<typename A>
 class MinSta {
