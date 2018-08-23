@@ -1,19 +1,15 @@
-//
-// Created by john on 2018-8-13.
-//
-
 #ifndef ML_CPP_NUMPY_CPP_H
 #define ML_CPP_NUMPY_CPP_H
 
 #include <istream>
 #include <vector>
+#include <cmath>
 #include "MinVector.h"
 #include "MinMatrix.h"
 #include "SortList.h"
 #include "MinStatistics.h"
 #include "LinearSystem.h"
-#include <cmath>
-#include "Heap/RBTree.h"
+#include "RBTree.h"
 
 using namespace std;
 
