@@ -138,7 +138,7 @@ public:
 
     MinVector<A> array(vector<A> vec) {
 
-        return minVector->array(vec);
+        return  MinVector<A>(vec);
     }
 
     MinVector<A> arange(int start, int last, A step = 0) {
