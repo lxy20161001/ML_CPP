@@ -103,7 +103,7 @@ public:
         return minMatrix->zero(static_cast<unsigned int>(r), static_cast<unsigned int>(c));
     }
 
-    MinMatrix ones(int r, int c) {
+    MinMatrix<A> ones(int r, int c) {
         vector<vector<A>> newVec(r);
         for (int i = 0; i < r; i++) {
             newVec[i] = vector<double>(c);
@@ -114,10 +114,10 @@ public:
                 newVec[i][j] = 0.0;
             }
         }
-        return MinMatrix(newVec);
+        return MinMatrix<A>(newVec);
     }
 
-    MinMatrix full(int r, int c, A num) {
+    MinMatrix<A> full(int r, int c, A num) {
         vector<vector<A>> newVec(r);
         for (int i = 0; i < r; i++) {
             newVec[i] = vector<double>(c);
@@ -128,7 +128,7 @@ public:
                 newVec[i][j] = num;
             }
         }
-        return MinMatrix(newVec);
+        return MinMatrix<A>(newVec);
     }
 
     MinVector<A> array(int num) {
