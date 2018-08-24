@@ -72,23 +72,26 @@ public:
 
     }
 
-    Numpy_Cpp(MinMatrix<A> vec,MinVector<A> vec2,LinearSystem<A> linearSystem1){
+    Numpy_Cpp(MinMatrix<A> vec,MinVector<A> vec2,LinearSystem<A> *linearSystem1){
         minMatrix = &vec;
         minVector = &vec2;
-        linearSystem = &linearSystem1;
+        linearSystem = linearSystem1;
         minSta = new MinSta<A>();
-
     }
 
     ~Numpy_Cpp() {
-        if(minMatrix)
+        if(!minMatrix)
             delete minMatrix;
-        if(minVector)
+            minMatrix = nullptr;
+        if(!minVector)
             delete minVector;
-        if(minSta)
+            minVector = nullptr;
+        if(!minSta)
             delete minSta;
-        if(linearSystem)
-            delete linearSystem;
+            minVector = nullptr;
+        if(!linearSystem)
+            delete[] linearSystem;
+            linearSystem = nullptr;
     }
 
 
@@ -100,7 +103,7 @@ public:
         return minMatrix->zero(static_cast<unsigned int>(r), static_cast<unsigned int>(c));
     }
 
-    Numpy_Cpp ones(int r, int c) {
+    MinMatrix ones(int r, int c) {
         vector<vector<A>> newVec(r);
         for (int i = 0; i < r; i++) {
             newVec[i] = vector<double>(c);
@@ -111,10 +114,10 @@ public:
                 newVec[i][j] = 0.0;
             }
         }
-        return Numpy_Cpp(newVec);
+        return MinMatrix(newVec);
     }
 
-    Numpy_Cpp full(int r, int c, A num) {
+    MinMatrix full(int r, int c, A num) {
         vector<vector<A>> newVec(r);
         for (int i = 0; i < r; i++) {
             newVec[i] = vector<double>(c);
@@ -125,9 +128,8 @@ public:
                 newVec[i][j] = num;
             }
         }
-        return Numpy_Cpp(newVec);
+        return MinMatrix(newVec);
     }
-
 
     MinVector<A> array(int num) {
 
