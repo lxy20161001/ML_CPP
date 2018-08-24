@@ -1,0 +1,118 @@
+//
+// Created by john on 2018-8-24.
+//
+
+#ifndef ML_CPP_ML_ANG_H
+#define ML_CPP_ML_ANG_H
+
+#include <iostream>
+#include <vector>
+#include "Numpy_Cpp.h"
+
+using namespace std;
+
+template <typename T>
+class ML_Ang{
+private:
+    Numpy_Cpp<T> np;
+    MinVector<T> minVector;
+    MinMatrix<T> minMatrix;
+    MinVector<T> x;
+    MinVector<T> d;
+    RBtree<T,T> rBtree;
+    MinMatrix<T> counter;
+    int k = 0;
+    vector<vector<T>> x_train;
+    vector<T> y_train;
+public:
+    ML_Ang(){
+
+    }
+    ML_Ang(int k){
+        assert(k>=1);
+        this->k = k;
+        this->x_train = {};
+        this->y_train = {};
+
+    }
+
+    ~ML_Ang(){
+
+    }
+
+    void fit(vector<vector<T>> x_train, vector<T> y_train){
+        assert(x_train.size() == y_train.size());
+        assert(this->k <= x_train.size());
+        this->x_train = x_train;
+        this->y_train = y_train;
+        cout<<"KNN(k="<<this->k<<")"<<endl;
+    }
+
+
+
+    MinVector<T> predict(vector<vector<T>> X_predict){
+        assert(!x_train.empty() && !y_train.empty());
+        assert(X_predict[0].size() == this->x_train[0].size());
+
+        vector<T> y_predict;
+
+        for(int i = 0; i < X_predict.size();++i){
+            y_predict.push_back(KNN_SINGLE(X_predict[i]));
+        }
+        return np.array(y_predict);
+    }
+
+private:
+    T KNN_SINGLE(vector<T> xt){
+        assert(xt.size() == this->x_train[0].size());
+        minMatrix=MinMatrix<T>(this->x_train);
+        minVector=MinVector<T>(this->y_train);
+        x = MinVector<T>(xt);
+        np = Numpy_Cpp<T>(minMatrix,minVector);
+        vector<T> distances(static_cast<unsigned int>(minMatrix.size()));
+        for(int i = 0 ; i<minMatrix.size();++i){
+            distances[i] = sqrt(np.sum((minMatrix[i] - x) ^ 2));
+        }
+        d = MinVector<T>(distances);
+        auto nearest = np.argSort(d);
+
+        Add_to_RbTree(nearest,k);
+        counter = MinMatrix<T>(rBtree.Counter());
+
+        return counter.sorted()[0][0];
+    }
+
+public:
+    T KNN_SINGLE_Test(int k,vector<vector<T>> x_train,vector<T> y_train,vector<T> te){
+        minMatrix=MinMatrix<T>(x_train);
+        minVector=MinVector<T>(y_train);
+        x = MinVector<T>(te);
+        np = Numpy_Cpp<T>(minMatrix,minVector);
+        vector<T> distances(static_cast<unsigned int>(minMatrix.size()));
+        for(int i = 0 ; i<minMatrix.size();++i){
+            distances[i] = sqrt(np.sum((minMatrix[i] - x) ^ 2));
+        }
+        d = MinVector<T>(distances);
+        auto nearest = np.argSort(d);
+
+        Add_to_RbTree(nearest,k);
+        counter = MinMatrix<T>(rBtree.Counter());
+
+        return counter.sorted()[0][0];
+    }
+
+private:
+    void Add_to_RbTree(MinVector<T> nearest,int k){
+        double ret = 0.0;
+        for (int i = 0; i < k; ++i) {
+            ret = minVector[nearest[i]];
+            if (rBtree.contains(ret)) {
+                rBtree.set(ret, rBtree.get(ret) + 1);
+            } else {
+                rBtree.add(ret, 1);
+            }
+        }
+    }
+};
+
+#endif //ML_CPP_ML_ANG_H
