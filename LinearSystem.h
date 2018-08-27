@@ -43,7 +43,7 @@ public:
 
         _m = A->row_num();
         _n = A->col_num();
-        
+
 
         for (int i = 0; i < A->row_num(); ++i) {
             Ab.addMinVector(A->row_vector(i).AddElem(b->getitem(i)));
@@ -65,8 +65,8 @@ public:
         }
         return ret;
     }
-    
-    MinMatrix<T> _forward() {
+
+    void _forward() {
         int i = 0;
         int k = 0;
         int n = this->_m;
@@ -89,11 +89,11 @@ public:
 
         }
 
-        return this->Ab;
+        //return this->Ab;
 
     }
 
-    MinMatrix<T> _backward() {
+    void _backward() {
         int n = this->pivots.size();
         for (int i = n - 1; i > -1; --i) {
             //主元在AB[I][K]的位置
@@ -102,7 +102,7 @@ public:
                 this->Ab.elimination(j, this->Ab[j].sub(this->Ab[i] * this->Ab[j][k]));
             }
         }
-        return this->Ab;
+        //return this->Ab;
     }
 
     bool Gj_elem() {
@@ -125,6 +125,7 @@ public:
         }
     }
 
+private:
     bool is_zero(T x) {
         return abs(x) < EPSILON;
     }
@@ -133,3 +134,5 @@ public:
         return abs(a - b) < EPSILON;
     }
 };
+
+#endif //ML_CPP_LINEARSYSTEM_H
