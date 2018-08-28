@@ -63,6 +63,11 @@ public:
         return MinVector<A>(newVec);
     }
 
+    int size() {
+        return vec.size();
+    }
+
+
     int row_num() {
         return this->shape()[0];
     }
@@ -74,7 +79,7 @@ public:
     MinVector<int> shape() {
 
         int r = vec.size();
-        int c = col_vector(0).len();
+        int c = row_vector(0).len();;
         return MinVector<int>({r, c});
     }
 
@@ -91,6 +96,7 @@ public:
             }
         }
         return MinMatrix<A>(newVec);
+
     }
 
     MinMatrix<A> operator+(MinMatrix<A> &matrix) {
@@ -358,59 +364,61 @@ public:
     }
 
 public:
-    MinMatrix<A> indexFancy(MinVector<A> *temp, vector<vector<A>> vec) {
+   //MinMatrix<A> indexFancy(MinVector<A> *temp, vector<vector<A>> vec) {
+   //    MinMatrix<A> indexMinMatrix;
+   //    int size = vec.size();
+   //    for (int i = 0; i < size; ++i) {
+   //        indexMinMatrix.addMinVector(temp->indexFancy(vec[i]));
+   //    }
+   //    return indexMinMatrix;
+   //}
+
+   //MinMatrix<A> indexFancy(MinVector<A> *temp, MinMatrix<A> vec) {
+   //    MinMatrix<A> indexMinMatrix;
+   //    int size = vec.size();
+   //    for (int i = 0; i < size; ++i) {
+   //        indexMinMatrix.addMinVector(temp->indexFancy(vec[i]));
+   //    }
+   //    return indexMinMatrix;
+   //}
+
+    MinMatrix<A> indexFancy(MinVector<A> temp, MinMatrix<A> vec) {
         MinMatrix<A> indexMinMatrix;
-        int size = vec.size();
+        int size = temp.len();
         for (int i = 0; i < size; ++i) {
-            indexMinMatrix.addMinVector(temp->indexFancy(vec[i]));
+
+            indexMinMatrix.addMinVector(vec[temp[i]]);
         }
         return indexMinMatrix;
     }
 
-    MinMatrix<A> indexFancy(MinVector<A> *temp, MinMatrix<A> vec) {
-        MinMatrix<A> indexMinMatrix;
-        int size = vec.size();
-        for (int i = 0; i < size; ++i) {
-            indexMinMatrix.addMinVector(temp->indexFancy(vec[i]));
-        }
-        return indexMinMatrix;
-    }
-
-    MinVector<A> indexFancy(MinVector<A> a, MinVector<A> b) {
-        vector<A> temp;
-        for (int i = 0; i < a.len(); ++i) {
-            temp.push_back(getitem(MinVector<A>({a.getitem(i), b.getitem(i)})));
-        }
-        return MinVector<A>(temp);
-    }
-
-    MinVector<A> operator()(MinVector<A> a, MinVector<A> b) {
-        return indexFancy(a, b);
-    }
-
-    MinVector<A> indexFancy(A a, MinVector<A> b) {
-        vector<A> temp;
-        for (int i = 0; i < b.len(); ++i) {
-            temp.push_back(getitem(MinVector<A>({a, b.getitem(i)})));
-        }
-        return MinVector<A>(temp);
-    }
-
-    MinVector<A> operator()(A a, MinVector<A> b) {
-        return indexFancy(a, b);
-    }
-
-    MinVector<A> indexFancy(vector<A> a, vector<A> b) {
-        vector<A> temp;
-        for (int i = 0; i < a.size(); ++i) {
-            temp.push_back(getitem(MinVector<A>({a[i], b[i]})));
-        }
-        return MinVector<A>(temp);
-    }
-
-    MinVector<A> operator()(vector<A> a, vector<A> b) {
-        return indexFancy(a, b);
-    }
+   // MinVector<A> operator()(MinVector<A> a, MinVector<A> b) {
+   //     return indexFancy(a, b);
+   // }
+//
+   // MinVector<A> indexFancy(A a, MinVector<A> b) {
+   //     vector<A> temp;
+   //     for (int i = 0; i < b.len(); ++i) {
+   //         temp.push_back(getitem(MinVector<A>({a, b.getitem(i)})));
+   //     }
+   //     return MinVector<A>(temp);
+   // }
+//
+   // MinVector<A> operator()(A a, MinVector<A> b) {
+   //     return indexFancy(a, b);
+   // }
+//
+   // MinVector<A> indexFancy(vector<A> a, vector<A> b) {
+   //     vector<A> temp;
+   //     for (int i = 0; i < a.size(); ++i) {
+   //         temp.push_back(getitem(MinVector<A>({a[i], b[i]})));
+   //     }
+   //     return MinVector<A>(temp);
+   // }
+//
+   // MinVector<A> operator()(vector<A> a, vector<A> b) {
+   //     return indexFancy(a, b);
+   // }
 
 
     MinVector<A> concatone(MinMatrix<A> vec) {
@@ -428,6 +436,8 @@ public:
     MinMatrix<A> sorted() {
         return insertionSort();
     }
+
+
 
 private:
     //考虑到暂时使用的矩阵比较小，于是使用插入算法
@@ -451,6 +461,13 @@ public:
         }
     }
 
+    void  swap(int i,int j , MinVector<A> J,MinVector<A> I){
+        for (int r = 0; r < J.len(); ++r) {
+            this->vec[i][r] = J[r];
+            this->vec[j][r] = I[r];
+        }
+      
+    }
 
 };
 
