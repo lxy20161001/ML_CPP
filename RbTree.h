@@ -211,6 +211,5 @@ private:
         PrintNode(node);
         PreOrderRec(node->left);
         PreOrderRec(node->right);
-
     }
 };
