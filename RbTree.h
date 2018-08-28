@@ -1,4 +1,3 @@
-
 #ifndef BLACK_REDTREE_RBTREE_H
 #define BLACK_REDTREE_RBTREE_H
 
@@ -7,9 +6,11 @@
 using namespace std;
 
 
+
 template <typename K,typename V>
 class RBtree{
 private:
+    vector<vector<K>> temp;
     const static bool RED = true;
     const static bool BLACK = false;
     class Node{
@@ -152,10 +153,11 @@ public:
         return node==0?0:node->value;
     }
 
-    Node* getnew(K key){
+    V getK(K key) {
         Node *node = getNode(root,key);
-        return node==0?0:node;
+        return node==0?0:node->key;
     }
+
 
     void set(K key,V NewValue){
         Node* node = getNode(root,key);
@@ -177,35 +179,38 @@ private:
         }else{
             return getNode(node->right,key);
         }
-
     }
 
 public:
-    vector<vector<K>> Counter(){
-        vector<vector<K>> temp(getSize());
-        for(int i = 0; i < getSize();++i){
-            temp.push_back(vector<K>());
-        }
-        for(int i = 0; i < getSize();++i){
-                temp[i].push_back(getnew(i)->key);
-                temp[i].push_back(getnew(i)->value);
-        }
-        return temp;
-    }
     void toString(){
         cout<<"{";
         for (int i = 0; i < getSize(); ++i) {
             if(i<getSize()-1)
-                cout << getnew(i)->key << ":" << getnew(i)->value<<",";
+                cout << get(i) << ":" << getK(i)<<",";
             else
-                cout << getnew(i)->key << ":" << getnew(i)->value;
+                cout << get(i) << ":" << getK(i);
         }
         cout<<"}";
         cout<<endl;
     }
 
+public:
+    vector<vector<K>>  PreOrder(){
+        PreOrderRec(root);
+        return temp;
+    }
+    void PrintNode(Node* node){
+        if(node == NULL)
+            return;
+        temp.push_back({node->value,node->key});
+    }
+private:
+    void PreOrderRec(Node* node){
+        if(node == NULL){
+            return;}
+        PrintNode(node);
+        PreOrderRec(node->left);
+        PreOrderRec(node->right);
 
-
+    }
 };
-
-#endif //BLACK_REDTREE_RBTREE_H
