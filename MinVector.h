@@ -66,7 +66,37 @@ public:
 
     }
 
- 
+    //输出格式
+    std::string repr_min(vector<T> vec){
+        std::string str;
+        str.append("(");
+        for(int i = 0; i <vec.size();i++){
+            if(i!=this->vec.size()-1){
+                str.append(std::to_string(vec[i])+',');
+            }else{
+                str.append(std::to_string(vec[i]));
+            }
+        }
+
+        str.append(")");
+        return str;
+    }
+
+    //输出格式
+    std::string repr_min(){
+        std::string str;
+        str.append("(");
+        for(int i = 0; i <this->vec.size();i++){
+            if(i!=this->vec.size()-1){
+                str.append(std::to_string(vec[i])+',');
+            }else{
+                str.append(std::to_string(vec[i]));
+            }
+        }
+
+        str.append(")");
+        return str;
+    }
 
 
     //重载<<
@@ -445,52 +475,37 @@ private:
 
 public:
     //模拟numpy的indexFancy功能,在vec当中找到相应位置的元素的快捷方法
-    MinVector<T> indexFancy(vector<T> vec){
-        assert(vec[vec.size()]<this->vec.size());
-        vector<T> temp;
-        for(auto i : vec){
-            for(auto j : this->vec){
-                if(this->vec[i] == j){
-                    temp.push_back(j);
-                }
-            }
-        }
-        return MinVector(temp);
-    }
+   // MinVector<T> indexFancy(vector<T> vec){
+   //     assert(vec[vec.size()]<this->vec.size());
+   //     vector<T> temp;
+   //     for(auto i : vec){
+   //         for(auto j : this->vec){
+   //             if(this->vec[i] == j){
+   //                 temp.push_back(j);
+   //             }
+   //         }
+   //     }
+   //     return MinVector(temp);
+   // }
+//
+   // MinVector<T> operator()(vector<T> vec){
+   //     return indexFancy(vec);
+   // }
 
-    MinVector<T> operator()(vector<T> vec){
-        return indexFancy(vec);
-    }
-
-    MinVector<T> indexFancy(MinVector<T> vec){
-        assert(vec[vec.len()]<this->vec.size());
+    MinVector<T> indexFancy(MinVector<T> a, MinVector<T> b) {
         vector<T> temp;
-        for(int i = 0; i < vec.len();++i){
-            for(int j = 0;j < this->vec.size();++j){
-                if(this->vec[vec.getitem(i)] == this->vec[j]){
-                    temp.push_back(j);
-                }
-            }
+        int size = a.len();
+        for (int i = 0; i < a.len(); ++i) {
+            temp.push_back(b[a[i]]);
         }
         return MinVector<T>(temp);
     }
 
-    MinVector<T> operator()(MinVector<T> vec){
-        return indexFancy(vec);
-    }
+    //MinVector<T> operator()(MinVector<T> vec){
+    //    return indexFancy(vec);
+    //}
 
 public:
-    //导入一个vector生成MinVector
-    MinVector<T> array(vector<T> vec) {
-        vector<T> vec2;
-        for (int i = 0; i < vec.size(); i++) {
-            vec2.push_back(vec[i]);
-        }
-        this->vec = vec2;
-        return MinVector<T>(vec2);
-    }
-
-
     //类似python的range
     MinVector<T> array(int num) {
         vector<T> vec2;
@@ -532,7 +547,6 @@ public:
         temp.push_back(value);
         return MinVector<T>(temp);
     }
-
 
 };
 
