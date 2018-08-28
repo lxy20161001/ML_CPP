@@ -134,5 +134,4 @@ private:
         return abs(a - b) < EPSILON;
     }
 };
-
 #endif //ML_CPP_LINEARSYSTEM_H
