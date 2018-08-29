@@ -195,18 +195,7 @@ public:
     }
 
     MinVector<A> argsort(MinVector<A> vec){
-        auto temp = vec.sorted();
-        vector<A> ret;
-        for(int i = 0; i < temp.len();++i){
-            for (int j = 0; j < vec.len(); ++j) {
-                if (vec[j] == temp[i]) {
-                    ret.push_back(j);
-                    break;
-
-                }
-            }
-        }
-        return MinVector<A>(ret);
+        return MinVector<A>(vec.sorted());
     }
 
     MinVector<A> linspace(A start, A last, A num, bool endpoint = true) {
