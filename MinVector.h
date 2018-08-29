@@ -448,27 +448,62 @@ public:
 
 public:
     MinVector<T> sorted(){
-        return insertionSort();
+        if(this->vec.size()<500){
+            return insertionSort();
+        }else{
+            return shellSort();
+        }
+
     }
 
 
 private:
-    //考虑到暂时使用的参数比较少，于是使用插入算法
     MinVector<T> insertionSort() {
-        vector<T> temp ;
+        vector<T> indexTemp;
 
         for(int i = 0;i<this->vec.size();++i){
-            temp.push_back(this->vec[i]);
+            indexTemp.push_back(i);
         }
-        for (int i = 0; i < 10; ++i) {
-            auto e = temp[i];
+        for (int i = 0; i < this->vec.size(); ++i) {
+            auto e = this->vec[i];
+            auto ie = indexTemp[i];
             int j;
-            for (j = i; j > 0 && e < temp[j-1]; j--) {
-                temp[j] = temp[j - 1];
+            for (j = i; j > 0 && e < this->vec[j-1]; j--) {
+                this->vec[j] = this->vec[j - 1];
+                indexTemp[j] = indexTemp[j-1];
             }
-            temp[j] = e;
+            this->vec[j] = e;
+            indexTemp[j] = ie;
         }
-        return MinVector(temp);
+        MinVector<T> Index = MinVector<T>(indexTemp);
+        return MinVector(indexTemp);
+    }
+
+    MinVector<T> shellSort(){
+        vector<double> indexTemp;
+        for(int i = 0;i<this->vec.size();++i){
+            indexTemp.push_back(i);
+        }
+        int h = 1,i,j;
+        int size = this->vec.size();
+        while(h<size/3){
+            h = 3*h+1;
+        }
+
+        for(;h>0;h/=3){
+            for(i=h;i<this->vec.size();i++){
+                T temp = this->vec[i];
+                T inTemp = indexTemp[i];
+
+                for(j = i-h;j>=0 && this->vec[j]>temp;j=j-h){
+                    this->vec[j+h] = this->vec[j];
+                    indexTemp[j+h] = indexTemp[j];
+                }
+                this->vec[j+h] = temp;
+                indexTemp[j+h] = inTemp;
+            }
+        }
+        return MinVector(indexTemp);
     }
 
 
