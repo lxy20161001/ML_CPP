@@ -17,7 +17,6 @@ class ML_Ang{
 private:
     Numpy_Cpp<T> np;
     MinVector<T> x;
-    MinVector<T> d;
     MinMatrix<T> X_train;
     MinVector<T> Y_train;
 public:
@@ -49,7 +48,6 @@ public:
         for(int i = 0; i < size ;++i){
             X_train.addMinVector(x_train[i]);
         }
-
         this->Y_train = MinVector<T>(y_train);
         return *this;
     }
@@ -62,11 +60,6 @@ public:
         out << ")";
         return out;
     }
-
-    void y_t(){
-        cout<<this->Y_train<<endl;
-    }
-
 
 
     MinVector<T> predict(vector<vector<T>> X_predict){
@@ -102,23 +95,19 @@ private:
         for(int i = 0 ; i<X_train.size();++i){
             distances[i] = sqrt(np.sum((X_train[i] - x) ^ 2));
         }
-        d = MinVector<T>(distances);
-        auto nearest = np.argSort(d);
-
+        auto nearest = np.MatchNum(np.argSort(MinVector<T>(distances)),Y_train);
         return Add_to_RbTree(nearest,k).sorted()[0][1];
     }
 
-    T KNN_SINGLE(MinVector<T> xt){
-        assert(xt.len() == X_train[0].len());
-        x = MinVector<T>(xt);
+    T KNN_SINGLE(MinVector<T> x){
+        assert(x.len() == X_train[0].len());
+        //x = MinVector<T>(xt);
         np = Numpy_Cpp<T>(X_train,Y_train);
-
         vector<T> distances(static_cast<unsigned int>(X_train.size()));
         for(int i = 0 ; i<X_train.size();++i){
             distances[i] = sqrt(np.sum((X_train[i] - x) ^ 2));
         }
-        d = MinVector<T>(distances);
-        auto nearest = np.MatchNum(np.argSort(d),Y_train);
+        auto nearest = np.MatchNum(np.argSort(MinVector<T>(distances)),Y_train);
         return  Add_to_RbTree(nearest,k).sorted()[0][1];
     }
 
@@ -143,8 +132,6 @@ private:
 public:
     MinVector<MinMatrix<T>> train_test_split(MinMatrix<T> X,MinVector<T> y, T test_ratio = 0.2){
         assert(X.shape()[0] == y.len());
-        //assert(test_ratio<1.0 && test_ratio>0);
-
 
         auto shuffle_indexes = np.shuffle_indexes(X.size());
         auto test_size = int(X.size()*test_ratio);
@@ -190,6 +177,22 @@ public:
             }
         }
         return ret/Test.len();
+    }
+
+    T Socore(MinMatrix<T> x,MinVector<T> y){
+        auto Mix = train_test_split(x,y,0.2);
+        auto X_train = Mix[0];
+        auto X_test = Mix[1];
+        auto Y_train = Mix[2][0];
+        auto Y_test = Mix[2][1];
+
+        Numpy_Cpp<double> np;
+        auto a = np.argSort(Y_test);
+        auto go = fit(X_train,Y_train);
+        cout<<go<<endl;
+        auto predict_y = go.predict(X_test);
+        auto t = go.Test_Res(predict_y,Y_test);
+        return t;
     }
 };
 
