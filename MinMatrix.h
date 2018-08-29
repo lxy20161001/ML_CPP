@@ -434,13 +434,14 @@ public:
 
 public:
     MinMatrix<A> sorted() {
-        return insertionSort();
+        if(this->vec.size()<500){
+            return insertionSort();
+        } else{
+            return shellSort();
+        }
     }
 
-
-
 private:
-    //考虑到暂时使用的矩阵比较小，于是使用插入算法
     MinMatrix<A> insertionSort() {
         for (int i = 0; i < this->vec.size(); ++i) {
             vector<A> e = this->vec[i];
@@ -453,6 +454,25 @@ private:
         return MinMatrix(this->vec);
     }
 
+    MinMatrix<A> shellSort(){
+        int h = 1,i,j;
+        int size = this->vec.size();
+        vector<A> temp;
+        while(h<size/3){
+            h = 3*h+1;
+        }
+
+        for(;h>0;h/=3){
+            for(i=h;i<this->vec.size();i++){
+                temp = this->vec[i];
+                for(j = i-h;j>=0 && this->vec[j]>temp;j=j-h){
+                    this->vec[j+h] = this->vec[j];
+                }
+                this->vec[j+h] = temp;
+            }
+        }
+        return MinMatrix(this->vec);
+    }
 public:
     //高斯消元部件
     void elimination(int num, MinVector<A> T) {
