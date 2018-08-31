@@ -475,57 +475,541 @@ private:
             this->vec[j] = e;
             indexTemp[j] = ie;
         }
+using namespace std;
+
+const double EPSILON = 1e-8;
+
+template<typename T>
+class MinVector {
+private:
+    vector<T> vec;
+
+public:
+    MinVector() {
+        this->vec = {};
+    }
+
+    MinVector(vector<T> vector1) {
+        vector<T> temp;
+        for (int i = 0; i < vector1.size(); ++i) {
+            temp.push_back(vector1[i]);
+        }
+        this->vec = temp;
+    }
+
+
+    ~MinVector() {
+
+    }
+
+public:
+    vector<T> ThisVec() {
+        return this->vec;
+    }
+
+    T getitem(int index) {
+        return this->vec[index];
+    }
+
+    int len() {
+        return this->vec.size();
+    }
+
+    //输出格式
+    std::string str() {
+        std::string str;
+        str.append("Vector(");
+        for (int i = 0; i < this->vec.size(); i++) {
+            if (i != this->vec.size() - 1) {
+                str.append(std::to_string(this->vec[i]) + ',');
+            } else {
+                str.append(std::to_string(this->vec[i]));
+            }
+        }
+
+        str.append(")");
+        return str;
+
+    }
+
+    //输出格式
+    std::string repr_min(vector<T> vec) {
+        std::string str;
+        str.append("(");
+        for (int i = 0; i < vec.size(); i++) {
+            if (i != this->vec.size() - 1) {
+                str.append(std::to_string(vec[i]) + ',');
+            } else {
+                str.append(std::to_string(vec[i]));
+            }
+        }
+
+        str.append(")");
+        return str;
+    }
+
+    //输出格式
+    std::string repr_min() {
+        std::string str;
+        str.append("(");
+        for (int i = 0; i < this->vec.size(); i++) {
+            if (i != this->vec.size() - 1) {
+                str.append(std::to_string(vec[i]) + ',');
+            } else {
+                str.append(std::to_string(vec[i]));
+            }
+        }
+
+        str.append(")");
+        return str;
+    }
+
+
+    //重载<<
+    friend ostream &operator<<(ostream &out, MinVector<T> vec) {
+
+        out << "Vector : (";
+        for (int i = 0; i < vec.vec.size(); i++) {
+            if (i != vec.vec.size() - 1) {
+                out << vec.vec[i] << ',';
+            } else {
+                out << vec.vec[i];
+            }
+        }
+
+        out << ")";
+        return out;
+    }
+
+public:
+    static std::string zero_print(vector<T> vec) {
+        std::string str;
+        str.append("(");
+        for (int i = 0; i < vec.size(); i++) {
+            if (i < vec.size() - 1) {
+                str.append(std::to_string(vec[i]) + ',');
+            } else {
+                str.append(std::to_string(vec[i]));
+            }
+        }
+
+        str.append(")");
+        return str;
+    }
+
+public:
+    //以下是四则运算
+    vector<T> add(vector<T> vec) {
+        assert(this->vec.size() == vec.size());
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] + vec[i]);
+        }
+
+        return newVec;
+    }
+
+    MinVector<T> add2(vector<T> vec) {
+        assert(this->vec.size() == vec.size());
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] + vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+
+    MinVector<T> add3(MinVector<T> minVector) {
+        assert(this->vec.size() == minVector.vec.size());
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] + minVector.vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+    MinVector<T> operator+(MinVector<T> &b) {
+        assert(this->vec.size() == b.vec.size());
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] + b.vec[i]);
+        }
+        MinVector<T> box = MinVector<T>(newVec);
+        return box;
+    }
+
+    MinVector<T> operator+(T k) {
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] + k);
+        }
+        MinVector<T> box = MinVector<T>(newVec);
+        return box;
+    }
+
+
+    vector<T> sub(vector<T> vec) {
+        assert(this->vec.size() == vec.size());
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] - vec[i]);
+        }
+
+        return newVec;
+    }
+
+    vector<T> sub(MinVector<T> vec) {
+        assert(this->vec.size() == vec.vec.size());
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] - vec[i]);
+        }
+
+        return newVec;
+    }
+
+    MinVector<T> sub2(vector<T> vec) {
+        assert(this->vec.size() == vec.size());
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] - vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+
+    T euc_distance(MinVector<T> b) {
+        T ol;
+        for (int i = 0; i < b.len(); ++i) {
+                ol += pow(2.0, (this->vec[i] - b[i]));
+        }
+        return sqrt(ol);
+    }
+
+    T euc_distance2(MinVector<T> b) {
+        T ol;
+        T ol2;
+        int mid = b.len()/2;
+        for (auto i = 0,j = mid+1; i < mid,j<b.len(); ++i,++j) {
+            ol += (this->vec[i] - b[i])^2.0;
+            ol2 += (this->vec[j] - b[j])^2.0;
+        }
+        return sqrt(ol+ol2);
+    }
+
+
+    MinVector<T> operator-(MinVector<T> &b) {
+        assert(this->vec.size() == b.vec.size());
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] - b.vec[i]);
+        }
+        MinVector<T> box = MinVector<T>(newVec);
+        return box;
+    }
+
+
+    MinVector<T> operator-(T k) {
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] - k);
+        }
+        MinVector<T> box = MinVector<T>(newVec);
+        return box;
+    }
+
+
+    MinVector<T> mul(T k) {
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] * k);
+        }
+
+        return MinVector(newVec);
+    }
+
+    MinVector<T> operator*(T k) {
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(this->vec[i] * k);
+        }
+        MinVector<T> box = MinVector<T>(newVec);
+        return box;
+    }
+
+    MinVector<T> operator^(T k) {
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(pow(this->vec[i], k));
+        }
+        MinVector<T> box = MinVector<T>(newVec);
+        return box;
+    }
+
+    MinVector<T> rmul(T k) {
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(k * this->vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+    friend MinVector<T> operator*(T k, MinVector<T> r) {
+
+        MinVector<T> rmul(r.vec);
+        return k * rmul;
+    }
+
+
+    T dot(vector<T> vec) {
+        assert(this->vec.size() == vec.size());
+        double ret = 0;
+        for (int i = 0; i < this->vec.size(); i++) {
+            ret = ret + (vec[i] * this->vec[i]);
+        }
+        return ret;
+    }
+
+    T dot(MinVector<T> vec) {
+        assert(this->vec.size() == vec.len());
+        double ret = 0;
+        for (int i = 0; i < this->vec.size(); i++) {
+            ret = ret + (vec[i] * this->vec[i]);
+        }
+        return ret;
+    }
+
+
+    MinVector<T> truediv(T k) {
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back((1 / k) * this->vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+    MinVector<T> operator/(T k) {
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back((1 / k) * this->vec[i]);
+        }
+        MinVector<T> box = MinVector<T>(newVec);
+        return box;
+    }
+
+    MinVector<T> pos() {
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(1 * this->vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+    MinVector<T> neg() {
+
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+            newVec.push_back(-1 * this->vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+    double norm() {
+        auto ret = 0;
+        for (int i = 0; i < this->vec.size(); i++) {
+            ret = ret + pow(this->vec[i], 2);
+        }
+
+        return sqrt(ret);
+    }
+
+    double norm(vector<T> vec) {
+        double ret = 0;
+        for (int i = 0; i < vec.size(); i++) {
+            ret = ret + pow(vec[i], 2);
+        }
+
+        return sqrt(ret);
+    }
+
+    double norm(MinVector<T> minVector) {
+        double ret = 0;
+        for (int i = 0; i < minVector.vec.size(); i++) {
+            ret = ret + pow(vec[i], 2);
+        }
+
+        return sqrt(ret);
+    }
+
+
+    MinVector<T> nomalize() {
+        assert(this->norm() > EPSILON);
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+
+            newVec.push_back(1 / this->norm() * this->vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+    MinVector<T> nomalize(vector<T> zero) {
+        if (this->norm(zero) < EPSILON) {
+            throw "Division by zero condition!";
+        }
+        vector<T> newVec;
+        for (int i = 0; i < this->vec.size(); i++) {
+
+            newVec.push_back(1 / this->norm() * this->vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+    static vector<T> zero(int dim) {
+
+        vector<T> newVec;
+        for (int i = 0; i < dim; i++) {
+            newVec.push_back(0);
+        }
+
+        return newVec;
+    }
+
+    MinVector<T> ones(int dim) {
+        vector<T> newVec;
+        for (int i = 0; i < dim; i++) {
+            newVec.push_back(1);
+        }
+
+        return MinVector(newVec);
+    }
+
+    MinVector<T> full(int dim, T num) {
+        vector<T> newVec;
+        for (int i = 0; i < dim; i++) {
+            newVec.push_back(num);
+        }
+
+        return MinVector(newVec);
+    }
+
+    MinVector<T> vecsub(vector<T> vec, int fisrt, int last) {
+        assert(fisrt > 0 && fisrt < vec.size());
+        assert(last > 0 && last < vec.size());
+        vector<T> newVec;
+        for (int i = fisrt; i < last; i++) {
+            newVec.push_back(vec[i]);
+        }
+
+        return MinVector(newVec);
+    }
+
+    T operator[](int k) {
+        assert(k <= vec.size() && k >= 0);
+        return getitem(k);
+    }
+
+public:
+    MinVector<T> sorted() {
+        if (this->vec.size() < 500) {
+            return insertionSort();
+        } else {
+            return shellSort();
+        }
+
+    }
+
+
+private:
+    MinVector<T> insertionSort() {
+        vector<T> indexTemp;
+
+        for (int i = 0; i < this->vec.size(); ++i) {
+            indexTemp.push_back(i);
+        }
+        for (int i = 0; i < this->vec.size(); ++i) {
+            auto e = this->vec[i];
+            auto ie = indexTemp[i];
+            int j;
+            for (j = i; j > 0 && e < this->vec[j - 1]; j--) {
+                this->vec[j] = this->vec[j - 1];
+                indexTemp[j] = indexTemp[j - 1];
+            }
+            this->vec[j] = e;
+            indexTemp[j] = ie;
+        }
         MinVector<T> Index = MinVector<T>(indexTemp);
         return MinVector(indexTemp);
     }
 
-    MinVector<T> shellSort(){
+    MinVector<T> shellSort() {
         vector<double> indexTemp;
-        for(int i = 0;i<this->vec.size();++i){
+        for (int i = 0; i < this->vec.size(); ++i) {
             indexTemp.push_back(i);
         }
-        int h = 1,i,j;
+        int h = 1, i, j;
         int size = this->vec.size();
-        while(h<size/3){
-            h = 3*h+1;
+        while (h < size / 3) {
+            h = 3 * h + 1;
         }
 
-        for(;h>0;h/=3){
-            for(i=h;i<this->vec.size();i++){
+        for (; h > 0; h /= 3) {
+            for (i = h; i < this->vec.size(); i++) {
                 T temp = this->vec[i];
                 T inTemp = indexTemp[i];
 
-                for(j = i-h;j>=0 && this->vec[j]>temp;j=j-h){
-                    this->vec[j+h] = this->vec[j];
-                    indexTemp[j+h] = indexTemp[j];
+                for (j = i - h; j >= 0 && this->vec[j] > temp; j = j - h) {
+                    this->vec[j + h] = this->vec[j];
+                    indexTemp[j + h] = indexTemp[j];
                 }
-                this->vec[j+h] = temp;
-                indexTemp[j+h] = inTemp;
+                this->vec[j + h] = temp;
+                indexTemp[j + h] = inTemp;
             }
         }
         return MinVector(indexTemp);
     }
 
 
-
 public:
     //模拟numpy的indexFancy功能,在vec当中找到相应位置的元素的快捷方法
-   // MinVector<T> indexFancy(vector<T> vec){
-   //     assert(vec[vec.size()]<this->vec.size());
-   //     vector<T> temp;
-   //     for(auto i : vec){
-   //         for(auto j : this->vec){
-   //             if(this->vec[i] == j){
-   //                 temp.push_back(j);
-   //             }
-   //         }
-   //     }
-   //     return MinVector(temp);
-   // }
+    // MinVector<T> indexFancy(vector<T> vec){
+    //     assert(vec[vec.size()]<this->vec.size());
+    //     vector<T> temp;
+    //     for(auto i : vec){
+    //         for(auto j : this->vec){
+    //             if(this->vec[i] == j){
+    //                 temp.push_back(j);
+    //             }
+    //         }
+    //     }
+    //     return MinVector(temp);
+    // }
 //
-   // MinVector<T> operator()(vector<T> vec){
-   //     return indexFancy(vec);
-   // }
+    // MinVector<T> operator()(vector<T> vec){
+    //     return indexFancy(vec);
+    // }
 
     MinVector<T> indexFancy(MinVector<T> a, MinVector<T> b) {
         vector<T> temp;
@@ -577,7 +1061,7 @@ public:
         return MinVector<T>(tempVec);
     }
 
-    MinVector<T> AddElem(T value){
+    MinVector<T> AddElem(T value) {
         vector<T> temp = this->ThisVec();
         temp.push_back(value);
         return MinVector<T>(temp);
