@@ -31,13 +31,12 @@ public:
 
     }
 
-    Numpy_Cpp(vector<vector<A>> vec) : vec(vec) {
-
+    explicit Numpy_Cpp(vector<vector<A>> vec) : vec(vec) {
         minMatrix = new MinMatrix<A>(vec);
         minSta = new MinSta<A>();
     }
 
-    Numpy_Cpp(vector<A> vec2) : vec2(vec2) {
+    explicit Numpy_Cpp(vector<A> vec2) : vec2(vec2) {
         minVector = new MinVector<A>(vec2);
         minSta = new MinSta<A>();
 
@@ -54,14 +53,12 @@ public:
         minMatrix = vec;
         minVector = vec2;
         minSta = new MinSta<A>();
-
     }
 
-    Numpy_Cpp(MinMatrix<A> vec,MinVector<A> vec2){
+    Numpy_Cpp(MinMatrix<A> &vec,MinVector<A> &vec2){
         minMatrix = &vec;
         minVector = &vec2;
         minSta = new MinSta<A>();
-
     }
 
     Numpy_Cpp(MinMatrix<A> *vec,MinVector<A> *vec2,LinearSystem<A> *linearSystem1){
@@ -77,9 +74,14 @@ public:
         minVector = &vec2;
         linearSystem = linearSystem1;
         minSta = new MinSta<A>();
+
     }
 
+
+
+
     ~Numpy_Cpp() {
+        // delete(initTemp);
         if(!minMatrix)
             delete minMatrix;
             minMatrix = nullptr;
@@ -131,6 +133,7 @@ public:
         return MinMatrix<A>(newVec);
     }
 
+
     MinVector<A> array(int num) {
 
         return minVector->array(num);
@@ -138,7 +141,7 @@ public:
 
     MinVector<A> array(vector<A> vec) {
 
-        return  MinVector<A>(vec);
+        return MinVector<A>(vec);
     }
 
     MinVector<A> arange(int start, int last, A step = 0) {
@@ -356,11 +359,12 @@ public:
         return minMatrix->tile(v, vec);
     }
 
-    template<typename T>
-    A sum(T vec) {
+    A sum(MinVector<A> vec) {
         return minSta->sum(vec);
 
     }
+
+
 
     // A sum(MinMatrix<A> matrix){
     //     return minSta->sum(matrix);
@@ -427,6 +431,14 @@ public:
 
     MinVector<A> argSort(MinVector<A> x){
         return minSta->argsort(x);
+    }
+
+    MinVector<A> MatchNum(MinVector<A> nearest,MinVector<A> Y_TRAIN){
+            vector<A> vec;
+            for(int i = 0 ; i < nearest.len(); ++i){
+                vec.push_back(Y_TRAIN[nearest[i]]);
+            }
+            return MinVector<A>(vec);
     }
 
     MinVector<A> sort(MinVector<A> x){
@@ -496,7 +508,7 @@ public:
 
     //线性代数的高斯消元
 
-    void Gj_elem(){
+    bool Gj_elem(){
         linearSystem->Gj_elem();
     }
 
@@ -505,6 +517,31 @@ public:
     }
 
 
-};
+    MinVector<A> shuffle_indexes(int num){
+        srand(static_cast<unsigned int>(time(NULL)));
+        vector<A> r;
+        for(int i = 0; i < num; ++i){
+            r.push_back(rand()%num);
+            //sleep(1);
+        }
+        return MinVector<A>(r);
+    }
 
+    MinVector<A> test_indexes(MinVector<A> shuffle,int start = 0, int _end = 0){
+        vector<A> temp;
+        for(int i = start; i < _end; ++i){
+            temp.push_back(shuffle[i]);
+        }
+        return MinVector<A>(temp);
+    }
+
+    MinVector<A> train_indexes(MinVector<A> shuffle,int start = 0, int _end = 0){
+        vector<A> temp;
+        for(int i = start; i < (_end-start); ++i){
+            temp.push_back(shuffle[i]);
+        }
+        return MinVector<A>(temp);
+    }
+
+};
 #endif //ML_CPP_NUMPY_CPP_H
