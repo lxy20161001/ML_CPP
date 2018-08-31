@@ -10,6 +10,8 @@
 #include "SortList.h"
 #include "RBTree.h"
 
+using namespace std;
+
 template<typename A>
 class MinSta {
 private:
@@ -74,20 +76,10 @@ public:
 
     A sum(MinVector<A> vec) {
         A ret = 0;
-        A ret2 = 0;
-        for (int i = 0; i < vec.len() / 2; ++i) {
-            ret = ret + vec[i];
-            ret2 = ret2 + vec[i + vec.len() / 2];
+        for(int i = 0;i < vec.len();++i){
+            ret += vec[i];
         }
-        if (vec.len() % 2 != 0) {
-            return ret + ret2 + vec[vec.len() - 1];
-        } else {
-            return ret + ret2;
-        }
-        //for(int i = 0;i < vec.len();++i){
-        //    ret = ret + vec[i];
-        //}
-        //return ret;
+        return ret;
 
     }
 
@@ -197,6 +189,8 @@ public:
     MinVector<A> argsort(MinVector<A> vec){
         return MinVector<A>(vec.sorted());
     }
+
+
 
     MinVector<A> linspace(A start, A last, A num, bool endpoint = true) {
         A a;
