@@ -76,7 +76,8 @@ public:
 
     A sum(MinVector<A> vec) {
         A ret = 0;
-        for(int i = 0;i < vec.len();++i){
+        auto size = vec.len();
+        for(int i = 0;i < size;++i){
             ret += vec[i];
         }
         return ret;
@@ -151,11 +152,12 @@ public:
     double var(MinVector<A> vec) {
         double x = mean(vec);
         double ret = 0;
-        for (int i = 0; i < vec.len(); ++i) {
-            ret = ret + pow(vec.getitem(i) - x, 2);
+        auto size = vec.len();
+        for (int i = 0; i < size; ++i) {
+            ret = ret + pow(vec.getitem(i) - x,2);
         }
 
-        return ret / vec.len();
+        return ret / (size-1);
     }
 
     double std(MinVector<A> vec) {
@@ -163,31 +165,15 @@ public:
     }
 
     int argmin(MinVector<A> vec) {
-        A minNum = min(vec);
-        int ret = 0;
-        for (int i = 0; i < vec.len(); ++i) {
-            if (vec.getitem(i) == minNum) {
-                ret = i;
-                break;
-            }
-        }
-        return ret;
+        return argsort(vec)[vec.len()-1];
     }
 
     int argmax(MinVector<A> vec) {
-        A minNum = max(vec);
-        int ret = 0;
-        for (int i = 0; i < vec.len(); ++i) {
-            if (vec.getitem(i) == minNum) {
-                ret = i;
-                break;
-            }
-        }
-        return ret;
+        return argsort(vec)[0];
     }
 
     MinVector<A> argsort(MinVector<A> vec){
-        return MinVector<A>(vec.sorted());
+        return vec.argsorted();
     }
 
 
@@ -276,7 +262,35 @@ public:
         return MinVector<A>(vector1);
     }
 
+    //数据归一化Normalization
+    MinVector<A> NormValue(MinVector<A> v){
+        auto size = v.len();
+        auto _max = max(v);
+        auto _min = min(v);
+        auto _max_min = _max-_min;
+
+        vector<A> vector1(static_cast<unsigned int>(size));
+
+        for(int i = 0;i < size ; ++i){
+            vector1[i] = v[i]-_min;
+        }
+
+        return MinVector<A>(vector1)/_max_min;
+    }
+
+   MinVector<A> StandValue(MinVector<A> v){
+        auto size = v.len();
+        auto _mean = mean(v);
+        auto _std = std(v);
+
+       vector<A> vector1(static_cast<unsigned int>(size));
+
+        for(int i = 0; i < size; ++i){
+            vector1[i] = v[i] - _mean;
+        }
+
+        return MinVector<A>(vector1)/_std;
+    }
 
 };
-
 #endif //ML_CPP_MINSTATISTICS_H
