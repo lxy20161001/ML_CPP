@@ -22,9 +22,9 @@
 
 9、SortHelp 简单的排序算法，由于数据量还不是很大，所以就写了选择和希尔排序；
 
-10 sim_lin_reg 简单的线性回归和多元线性回归；
+10 Sim_lin_reg 简单的线性回归和多元线性回归；
 
-11 split_data 创造训练集和测试集
+11 Split_data 创造训练集和测试集
 
-12 standardscaler 数据归一化
+12 Standard_Scaler 数据归一化
 
