@@ -2,14 +2,16 @@
 #define ML_CPP_NUMPY_CPP_H
 
 #include <istream>
-#include <vector>
 #include <cmath>
+#include <vector>
+#include <ctime>
+#include <tuple>
 #include "MinVector.h"
 #include "MinMatrix.h"
 #include "SortList.h"
 #include "MinStatistics.h"
 #include "LinearSystem.h"
-#include "RBTree.h"
+#include "Heap/RBTree.h"
 
 using namespace std;
 
@@ -43,39 +45,39 @@ public:
     }
 
     Numpy_Cpp(vector<vector<A>> vec,vector<A> vec2):vec(vec),vec2(vec2){
-        minMatrix = new MinMatrix<A>(vec);
-        minVector = new MinVector<A>(vec2);
-        minSta = new MinSta<A>();
+       // minMatrix = new MinMatrix<A>(vec);
+       // minVector = new MinVector<A>(vec2);
+       // minSta = new MinSta<A>();
 
     }
 
     Numpy_Cpp(MinMatrix<A> *vec,MinVector<A> *vec2){
         minMatrix = vec;
         minVector = vec2;
-        minSta = new MinSta<A>();
+       // minSta = new MinSta<A>();
     }
 
     Numpy_Cpp(MinMatrix<A> &vec,MinVector<A> &vec2){
         minMatrix = &vec;
         minVector = &vec2;
-        minSta = new MinSta<A>();
+       // minSta = new MinSta<A>();
     }
 
-    Numpy_Cpp(MinMatrix<A> *vec,MinVector<A> *vec2,LinearSystem<A> *linearSystem1){
-        minMatrix = vec;
-        minVector = vec2;
-        linearSystem = linearSystem1;
-        minSta = new MinSta<A>();
+   //Numpy_Cpp(MinMatrix<A> *vec,MinVector<A> *vec2,LinearSystem<A> *linearSystem1){
+   //    minMatrix = vec;
+   //    minVector = vec2;
+   //    linearSystem = linearSystem1;
+   //   // minSta = new MinSta<A>();
 
-    }
+   //}
 
-    Numpy_Cpp(MinMatrix<A> vec,MinVector<A> vec2,LinearSystem<A> *linearSystem1){
-        minMatrix = &vec;
-        minVector = &vec2;
-        linearSystem = linearSystem1;
-        minSta = new MinSta<A>();
+   //Numpy_Cpp(MinMatrix<A> vec,MinVector<A> vec2,LinearSystem<A> *linearSystem1){
+   //    minMatrix = &vec;
+   //    minVector = &vec2;
+   //    linearSystem = linearSystem1;
+   //    //minSta = new MinSta<A>();
 
-    }
+   //}
 
 
 
@@ -433,13 +435,20 @@ public:
         return minSta->argsort(x);
     }
 
-    MinVector<A> MatchNum(MinVector<A> nearest,MinVector<A> Y_TRAIN){
-            vector<A> vec;
-            for(int i = 0 ; i < nearest.len(); ++i){
-                vec.push_back(Y_TRAIN[nearest[i]]);
-            }
-            return MinVector<A>(vec);
+    MinVector<tuple<A,A>> argSort(MinVector<tuple<A,A>> x){
+        return minSta->argsort(x);
     }
+
+    MinVector<A> MatchNum(MinVector<A> nearest,MinVector<A> Y_TRAIN){
+        vector<A> vec;
+        auto size = nearest.len();
+        for(int i = 0 ; i < size; ++i){
+            vec.push_back(Y_TRAIN[nearest[i]]);
+        }
+        return MinVector<A>(vec);
+    }
+
+
 
     MinVector<A> sort(MinVector<A> x){
         vector<A> temp;
@@ -516,6 +525,16 @@ public:
         linearSystem->fancy_print();
     }
 
+    MinVector<A> randint(A start,A end,int size){
+        srand(static_cast<unsigned int>(time(NULL)));
+        vector<A> vec;
+        for(int i = 0;i<size;++i){
+            vec.push_back(rand()%(end-start+1)+start);
+        }
+
+        return MinVector<A>(vec);
+    }
+
 
     MinVector<A> shuffle_indexes(int num){
         srand(static_cast<unsigned int>(time(NULL)));
@@ -537,7 +556,7 @@ public:
 
     MinVector<A> train_indexes(MinVector<A> shuffle,int start = 0, int _end = 0){
         vector<A> temp;
-        for(int i = start; i < (_end-start); ++i){
+        for(int i = start; i < (_end); ++i){
             temp.push_back(shuffle[i]);
         }
         return MinVector<A>(temp);
