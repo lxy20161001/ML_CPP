@@ -1,3 +1,7 @@
+//
+// Created by john on 2018-6-8.
+//
+
 #ifndef BLACK_REDTREE_RBTREE_H
 #define BLACK_REDTREE_RBTREE_H
 
@@ -28,6 +32,7 @@ private:
             right = 0;
             color = RED;
         }
+
 
         ~Node(){
             delete left;
@@ -71,6 +76,7 @@ public:
         root = addRec(root,key,value);
         root->color = BLACK;
     }
+
 
 private:
 
@@ -211,5 +217,9 @@ private:
         PrintNode(node);
         PreOrderRec(node->left);
         PreOrderRec(node->right);
+
     }
+
 };
+
+#endif //BLACK_REDTREE_RBTREE_H
