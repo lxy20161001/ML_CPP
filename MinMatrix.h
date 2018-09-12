@@ -7,6 +7,7 @@
 #include <iostream>
 #include <cassert>
 #include <vector>
+#include <tuple>
 
 using namespace std;
 
@@ -15,14 +16,36 @@ class MinMatrix {
 private:
 private:
     vector<vector<A>> vec;
-    vector<vector<A>> vec2;
 public:
     MinMatrix(vector<vector<A>> vec) : vec(vec) {
 
     }
 
+    MinMatrix(MinVector<A> shape){
+
+        auto row_size = shape[0];
+        auto col_size = shape[1];
+        vector<A> cec(col_size);
+        for(int i = 0; i < row_size; ++i){
+            this->vec.push_back(cec);
+        }
+
+        for(int i = 0; i < row_size;++i){
+            for(int j = 0; j < col_size;++j){
+                this->vec[i][j] = 0;
+            }
+        }
+    }
+
+
     MinMatrix() {
         vec = {};
+    }
+
+    MinMatrix(int num,MinVector<A> vec){
+        for(int i = 0; i < num;++i){
+            this->vec.push_back(vec.ThisVec());
+        }
     }
 
     A getitem(vector<int> pos) {
@@ -50,6 +73,22 @@ public:
         return MinMatrix<A>(newVec);
     }
 
+    MinMatrix<A> ones(unsigned r, unsigned c) {
+        vector<vector<A>> newVec(r);
+        for (int i = 0; i < r; i++) {
+            newVec[i] = vector<double>(c);
+        }
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < c; j++) {
+                newVec[i][j] = 1.0;
+            }
+        }
+        return MinMatrix<A>(newVec);
+    }
+
+    A Dim(){
+        return 2;
+    }
 
     MinVector<A> row_vector(int index) {
         return MinVector<A>(vec[index]);
@@ -57,7 +96,8 @@ public:
 
     MinVector<A> col_vector(int index) {
         vector<A> newVec;
-        for (int i = 0; i < vec.size(); i++) {
+        auto size = vec.size();
+        for (int i = 0; i < size; i++) {
             newVec.push_back(vec[i][index]);
         }
         return MinVector<A>(newVec);
@@ -76,21 +116,21 @@ public:
         return this->vec[0].size();
     }
 
-    MinVector<int> shape() {
-
-        int r = vec.size();
-        int c = row_vector(0).len();;
-        return MinVector<int>({r, c});
+    MinVector<A> shape() {
+        A r = vec.size();
+        A c = row_vector(0).len();
+        return MinVector<A>({r, c});
     }
 
 
     MinMatrix<A> add(MinMatrix<A> matrix) {
         assert(this->size() == matrix.size());
         vector<vector<A>> newVec(matrix.size());
-        for (int i = 0; i < matrix.size(); i++) {
+        auto size = matrix.size();
+        for (int i = 0; i < size; i++) {
             newVec[i] = vector<double>(matrix.row_vector(0).len());
         }
-        for (int i = 0; i < matrix.size(); i++) {
+        for (int i = 0; i < size; i++) {
             for (int j = 0; j < matrix.row_vector(0).len(); j++) {
                 newVec[i][j] = this->getitem({i, j}) + matrix.getitem({i, j});
             }
@@ -101,12 +141,15 @@ public:
 
     MinMatrix<A> operator+(MinMatrix<A> &matrix) {
         assert(this->size() == matrix.size());
-        vector<vector<A>> newVec(matrix.size());
-        for (int i = 0; i < matrix.size(); i++) {
-            newVec[i] = vector<double>(matrix.row_vector(0).len());
+        auto size = matrix.size();
+        auto size2 = matrix.row_vector(0).len();
+        vector<vector<A>> newVec(size);
+
+        for (int i = 0; i < size; i++) {
+            newVec[i] = vector<double>(size2);
         }
-        for (int i = 0; i < matrix.size(); i++) {
-            for (int j = 0; j < matrix.row_vector(0).len(); j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size2; j++) {
                 newVec[i][j] = this->getitem({i, j}) + matrix.getitem({i, j});
             }
         }
@@ -116,12 +159,14 @@ public:
 
     MinMatrix<A> sub(MinMatrix<A> matrix) {
         assert(this->size() == matrix.size());
-        vector<vector<A>> newVec(matrix.size());
-        for (int i = 0; i < matrix.size(); i++) {
-            newVec[i] = vector<double>(matrix.row_vector(0).len());
+        auto size = matrix.size();
+        auto size2 = matrix.row_vector(0).len();
+        vector<vector<A>> newVec(size);
+        for (int i = 0; i < size; i++) {
+            newVec[i] = vector<double>(size2);
         }
-        for (int i = 0; i < matrix.size(); i++) {
-            for (int j = 0; j < matrix.row_vector(0).len(); j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size2; j++) {
                 newVec[i][j] = this->getitem({i, j}) - matrix.getitem({i, j});
             }
         }
@@ -131,12 +176,14 @@ public:
 
     MinMatrix<A> operator-(MinMatrix<A> &matrix) {
         assert(this->size() == matrix.size());
-        vector<vector<A>> newVec(matrix.size());
-        for (int i = 0; i < matrix.size(); i++) {
-            newVec[i] = vector<double>(matrix.row_vector(0).len());
+        auto size = matrix.size();
+        auto size2 = matrix.row_vector(0).len();
+        vector<vector<A>> newVec(size);
+        for (int i = 0; i < size; i++) {
+            newVec[i] = vector<double>(size2);
         }
-        for (int i = 0; i < matrix.size(); i++) {
-            for (int j = 0; j < matrix.row_vector(0).len(); j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size2; j++) {
                 newVec[i][j] = this->getitem({i, j}) - matrix.getitem({i, j});
             }
         }
@@ -146,11 +193,14 @@ public:
     MinMatrix<A> mul(A k) {
 
         vector<vector<A>> newVec(static_cast<unsigned int>(this->size()));
-        for (int i = 0; i < this->size(); i++) {
-            newVec[i] = vector<double>(this->row_vector(0).len());
+        auto size = this->size();
+        auto size2 = this->row_vector(0).len();
+
+        for (int i = 0; i < size; i++) {
+            newVec[i] = vector<double>(size2);
         }
-        for (int i = 0; i < this->size(); i++) {
-            for (int j = 0; j < this->row_vector(0).len(); j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size2; j++) {
                 newVec[i][j] = this->getitem({i, j}) * k;
             }
         }
@@ -160,11 +210,14 @@ public:
 
     MinMatrix<A> operator*(A k) {
         vector<vector<A>> newVec(static_cast<unsigned int>(this->size()));
-        for (int i = 0; i < this->size(); i++) {
-            newVec[i] = vector<double>(this->row_vector(0).len());
+        auto size = this->size();
+        auto size2 = this->row_vector(0).len();
+
+        for (int i = 0; i < size; i++) {
+            newVec[i] = vector<double>(size2);
         }
-        for (int i = 0; i < this->size(); i++) {
-            for (int j = 0; j < this->row_vector(0).len(); j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size2; j++) {
                 newVec[i][j] = this->getitem({i, j}) * k;
             }
         }
@@ -174,11 +227,14 @@ public:
     MinMatrix<A> rmul(A k) {
 
         vector<vector<A>> newVec(static_cast<unsigned int>(this->size()));
-        for (int i = 0; i < this->size(); i++) {
-            newVec[i] = vector<double>(this->row_vector(0).len());
+        auto size = this->size();
+        auto size2 = this->row_vector(0).len();
+
+        for (int i = 0; i < size; i++) {
+            newVec[i] = vector<double>(size2);
         }
-        for (int i = 0; i < this->size(); i++) {
-            for (int j = 0; j < this->row_vector(0).len(); j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 newVec[i][j] = k * this->getitem({i, j});
             }
         }
@@ -259,12 +315,12 @@ public:
 
     friend ostream &operator<<(ostream &out, MinMatrix<A> matrix) {
 
-        out << "Matrix : (";
+        out << "Matrix : ("<<endl;
         for (int i = 0; i < matrix.size(); i++) {
             if (i != matrix.size() - 1) {
-                out << matrix.row_vector(i) << ',';
+                out << matrix.row_vector(i) << ','<<endl;
             } else {
-                out << matrix.row_vector(i);
+                out << matrix.row_vector(i)<<endl;
             }
         }
 
@@ -276,17 +332,20 @@ public:
     MinVector<A> operator[](int k) {
         assert(k < vec.size() && k >= 0);
 
-        return MinVector<A>(this->row_vector(k));
+        return this->row_vector(k);
     }
 
-    MinMatrix<A> dot(MinMatrix<A> &a) {
+    MinMatrix<A> dot(MinMatrix<A> a) {
         assert(col_num() == a.row_num());
         vector<vector<A>> newVec;
-        for (int i = 0; i < col_num(); i++) {
+        //新矩阵的行数等于=A矩阵的行数
+        auto size = row_num();
+        auto size2 = a.col_num();
+        for (int i = 0; i < size ; i++) {
             newVec.push_back(vector<double>());
         }
-        for (int i = 0; i < row_num(); i++) {
-            for (int j = 0; j < a.col_num(); j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size2; j++) {
                 newVec[i].push_back(row_vector(i).dot(a.col_vector(j)));
             }
         }
@@ -294,29 +353,32 @@ public:
     }
 
 
+
     MinVector<A> dot(MinVector<A> a) {
         assert(col_num() == a.len());
-        vector<double> vecTemp;
-        for (int i = 0; i < col_num(); i++) {
-            vecTemp.push_back(row_vector(i).dot(a));
+        MinVector<A> vecTemp;
+        auto size = col_num();
+        for (int i = 0; i < size; i++) {
+            vecTemp._push_back(row_vector(i).dot(a));
         }
-        return MinVector<A>(vecTemp);
+        return vecTemp;
     }
 
+
+    //矩阵转至
     MinMatrix<A> T() {
 
-        vector<vector<A>> newVec;
-        for (int i = 0; i < col_num(); i++) {
-            newVec.push_back(vector<double>());
+        MinMatrix<A> mat(this->vec);
+        MinMatrix<A> matT;
+        auto size = mat.col_num();
+        for(int i = 0; i < size;++i){
+            matT.addMinVector(mat.col_vector(i));
         }
-        for (int i = 0; i < this[0].size(); i++) {
-            for (int j = 0; j < col_num(); j++) {
-                newVec[i].push_back(col_vector(i)[j]);
-            }
-        }
-        return MinMatrix(newVec);
+
+        return matT;
     }
 
+    //单位矩阵I
     MinMatrix<A> indentity(int n) {
         vector<vector<A>> inVec;
         for (int i = 0; i < n; ++i) {
@@ -335,17 +397,18 @@ public:
 
     MinMatrix<A> addMinVector(MinVector<A> minVector) {
         vector<A> vec;
-        for (int i = 0; i < minVector.len(); ++i) {
+        auto size = minVector.len();
+        for (int i = 0; i < size; ++i) {
             vec.push_back(minVector[i]);
         }
         this->vec.push_back(vec);
         return MinMatrix<A>(this->vec);
     }
 
+    //根据vector的参数，对把v的数据扩展成所有行都一样的矩阵
     MinMatrix<A> tile(MinVector<A> v, vector<A> vec) {
         auto r = vec[0];
         auto c = vec[1];
-
 
         vector<A> vector1;
 
@@ -382,43 +445,59 @@ public:
    //    return indexMinMatrix;
    //}
 
+    //根据参数向量temp，把矩阵中的对应向量输出成一个新的矩阵
     MinMatrix<A> indexFancy(MinVector<A> temp, MinMatrix<A> vec) {
         MinMatrix<A> indexMinMatrix;
         int size = temp.len();
         for (int i = 0; i < size; ++i) {
-
             indexMinMatrix.addMinVector(vec[temp[i]]);
         }
         return indexMinMatrix;
     }
 
-   // MinVector<A> operator()(MinVector<A> a, MinVector<A> b) {
-   //     return indexFancy(a, b);
-   // }
+    MinMatrix<A> operator()(MinVector<A> test,A num){
+        auto size = test.len();
+        MinMatrix<A> newMat;
+        for(int i = 0;i < size; ++i){
+            if(test[i]<num){
+                newMat.addMinVector(this->vec[i]);
+            }
+        }
+
+        return newMat;
+    }
+
+
+
+    MinVector<A> operator()(MinVector<A> a, MinVector<A> b) {
+        return indexFancy(a, b);
+    }
+//根据a，去遍历MinVector b中的参数，组成新的vector向量参数去获取原有矩阵的元素并输出新的MinVector
+    MinVector<A> indexFancy(A a, MinVector<A> b) {
+        vector<A> temp;
+        for (int i = 0; i < b.len(); ++i) {
+            temp.push_back(getitem(MinVector<A>({a, b.getitem(i)})));
+        }
+        return MinVector<A>(temp);
+    }
 //
-   // MinVector<A> indexFancy(A a, MinVector<A> b) {
-   //     vector<A> temp;
-   //     for (int i = 0; i < b.len(); ++i) {
-   //         temp.push_back(getitem(MinVector<A>({a, b.getitem(i)})));
-   //     }
-   //     return MinVector<A>(temp);
-   // }
-//
-   // MinVector<A> operator()(A a, MinVector<A> b) {
-   //     return indexFancy(a, b);
-   // }
-//
-   // MinVector<A> indexFancy(vector<A> a, vector<A> b) {
-   //     vector<A> temp;
-   //     for (int i = 0; i < a.size(); ++i) {
-   //         temp.push_back(getitem(MinVector<A>({a[i], b[i]})));
-   //     }
-   //     return MinVector<A>(temp);
-   // }
-//
-   // MinVector<A> operator()(vector<A> a, vector<A> b) {
-   //     return indexFancy(a, b);
-   // }
+    MinVector<A> operator()(A a, MinVector<A> b) {
+        return indexFancy(a, b);
+    }
+
+    MinVector<A> indexFancy(vector<A> a, vector<A> b) {
+        vector<A> temp;
+        for (int i = 0; i < a.size(); ++i) {
+            temp.push_back(getitem(MinVector<A>({a[i], b[i]})));
+        }
+        return MinVector<A>(temp);
+    }
+
+    MinVector<A> operator()(vector<A> a, vector<A> b) {
+        return indexFancy(a, b);
+    }
+
+    /////////////////////////////////////////////////
 
 
     MinVector<A> concatone(MinMatrix<A> vec) {
@@ -441,7 +520,10 @@ public:
         }
     }
 
+
+
 private:
+    //考虑到暂时使用的矩阵比较小，于是使用插入算法
     MinMatrix<A> insertionSort() {
         for (int i = 0; i < this->vec.size(); ++i) {
             vector<A> e = this->vec[i];
@@ -473,22 +555,71 @@ private:
         }
         return MinMatrix(this->vec);
     }
+
 public:
     //高斯消元部件
     void elimination(int num, MinVector<A> T) {
-        for (int i = 0; i < T.len(); ++i) {
-            this->vec[num][i] = T[i];
-        }
+        //for (int i = 0; i < T.len(); ++i) {
+            this->vec[num] = T.ThisVec();
+        //}
     }
 
     void  swap(int i,int j , MinVector<A> J,MinVector<A> I){
-        for (int r = 0; r < J.len(); ++r) {
+        //assert(i=j);
+        auto size = J.len();
+        for (int r = 0; r < size; ++r) {
             this->vec[i][r] = J[r];
             this->vec[j][r] = I[r];
         }
-      
     }
 
+    void swap_v (int i, int j){
+        vector<A> temp;
+        temp = this->vec[i];
+        this->vec[i]=this->vec[j];
+        this->vec[j] = temp;
+    }
+
+public:
+    void valueChange(int num,MinVector<A> temp){
+        auto size = temp.len();
+        for(int i = 0 ; i < size; ++i){
+            this->vec[num][i] = temp[i];
+        }
+    }
+
+    //用于矩阵求逆
+    void valueChange(int num,MinVector<A> temp,int NewSize){
+        for(int i = NewSize ; i < 2*NewSize; ++i){
+            this->vec[num][i-NewSize] = temp[i];
+        }
+    }
+
+    void _push_back(int num,int t){
+        this->vec[num].push_back(t);
+    }
+
+
+    //矩阵列数据改变
+    void col_value_Change(int num,MinVector<A> col_vector){
+        auto size = this->vec.size();
+        for(int i = 0; i < size; ++i){
+            this->vec[i][num] = col_vector[i];
+        }
+    }
+
+
 };
+
+template <typename T>
+MinMatrix<T> Matrix(vector<vector<T>> vec){
+    return MinMatrix<T>(vec);
+}
+
+template <typename T>
+MinMatrix<T> Matrix(MinVector<T> shape){
+    return MinMatrix<T>(shape);
+}
+
 
 #endif //LINEARALGEBRA2_MINMATRIX_H
