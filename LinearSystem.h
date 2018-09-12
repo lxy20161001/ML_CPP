@@ -16,7 +16,7 @@ using namespace std;
 template<typename T>
 class LinearSystem {
 public:
-    T EPSILON = 1e-8;
+    T EPSILON = 1e-010;
     MinMatrix<T> Ab;
     int _m;
     int _n;
@@ -30,12 +30,25 @@ public:
         _n = A.col_num();
 
 
-        for (int i = 0; i < A.row_num(); ++i) {
+        for (int i = 0; i < _m; ++i) {
             Ab.addMinVector(A.row_vector(i).AddElem(b.getitem(i)));
         }
 
         pivots = {};
 
+    }
+
+    LinearSystem(MinMatrix<T> A,MinMatrix<T> B){
+        assert(A.size() == B.size());
+
+        _m = A.row_num();
+        _n = A.col_num();
+
+        for (int i = 0; i < _m; ++i) {
+            Ab.addMinVector(A.row_vector(i).AddElem(B[i]));
+        }
+
+        pivots = {};
     }
 
     LinearSystem(MinMatrix<T> *A, MinVector<T> *b) {
@@ -45,12 +58,26 @@ public:
         _n = A->col_num();
 
 
-        for (int i = 0; i < A->row_num(); ++i) {
+        for (int i = 0; i < _m; ++i) {
             Ab.addMinVector(A->row_vector(i).AddElem(b->getitem(i)));
         }
 
         pivots = {};
 
+    }
+
+
+    LinearSystem(MinMatrix<T> *A,MinMatrix<T> *B){
+        assert(A->size() == B->size());
+
+        _m = A->row_num();
+        _n = A->col_num();
+
+        for (int i = 0; i < _m; ++i) {
+            Ab.addMinVector(A->row_vector(i).AddElem(B[i]));
+        }
+
+        pivots = {};
     }
 
     T _max_row(int index_i, int index_j, int n) {
@@ -73,7 +100,7 @@ public:
 
         while (i < this->_m && k < this->_n) {
             auto max_row = this->_max_row(i, k, this->_m);
-            this->Ab.swap(i,max_row,this->Ab[max_row],this->Ab[i]);
+            this->Ab.swap_v(i,max_row);
 
 
             if (is_zero(this->Ab[i][k])) {
@@ -95,10 +122,10 @@ public:
 
     void _backward() {
         int n = this->pivots.size();
-        for (int i = n - 1; i > -1; --i) {
+        for (int i = n - 1; i > -1; i = i - 1) {
             //主元在AB[I][K]的位置
             T k = this->pivots[i];
-            for (int j = i - 1; j > -1; --j) {
+            for (int j = i - 1; j > -1; j = j -1) {
                 this->Ab.elimination(j, this->Ab[j].sub(this->Ab[i] * this->Ab[j][k]));
             }
         }
@@ -109,9 +136,12 @@ public:
         this->_forward();
         this->_backward();
 
-        for(int i = this->pivots.size()-1;i < this->_m; ++i){
-            if(!this->is_zero(this->Ab[i][Ab[i].len()-1]))
+        auto size = pivots.size()-1;
+
+        for(int i = size;i < this->_m; ++i){
+            if(this->is_zero(this->Ab[i][Ab[i].len()-1])){
                 return false;
+            }
         }
         return true;
     }
@@ -134,4 +164,33 @@ private:
         return abs(a - b) < EPSILON;
     }
 };
+
+
+template <typename T>
+MinMatrix<T> inv(MinMatrix<T> A){
+    if(A.row_num()!=A.col_num()) {
+        cout<<"RowNum must be == ColNum";
+        return MinMatrix<T>();
+    }
+
+    auto size = A.row_num();
+
+    LinearSystem<T> ls(A,MinMatrix<T>().indentity(size));
+
+    if(!ls.Gj_elem()){
+        cout<<"No solution";
+        return MinMatrix<T>();
+    };
+
+
+    MinMatrix<T> invA(A.shape());
+
+    for(int i = 0; i < size;++i){
+        //invA.valueChange(i,ls.Ab[i],size);
+        invA.col_value_Change(i,ls.Ab.col_vector(i+size));
+    }
+
+    return invA;
+    
+}
 #endif //ML_CPP_LINEARSYSTEM_H
