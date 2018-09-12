@@ -2,7 +2,7 @@
 以bobo老师的python代码为原本，修改而成的C++简单版本KNN邻近算法，网址：https://coding.imooc.com/class/169.html
 
  
-现在sklearn上的iris和digits经过测试都是可以运行的，但速度有待提高；
+现在sklearn的自带数据做测试用例，经过测试是可以运行的，但速度有待提高；
 
 1、 DataSets 是数据集，主要来源于sklearn；
 
