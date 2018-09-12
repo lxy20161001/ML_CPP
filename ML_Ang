@@ -7,13 +7,15 @@
 
 #include <iostream>
 #include <vector>
+#include <tuple>
 #include "Numpy_Cpp.h"
-#include "dataSet.h"
+#include "StandardScaler.h"
+#include "data/dataSet.h"
 
 using namespace std;
 
 template <typename T>
-class ML_Ang{
+class Knn_Ang{
 private:
     Numpy_Cpp<T> np;
     MinVector<T> x;
@@ -21,19 +23,20 @@ private:
     MinVector<T> Y_train;
 public:
     int k = 0;
-    ML_Ang(){
+    Knn_Ang(){
 
     }
-    ML_Ang(int k){
+
+    explicit Knn_Ang(int k){
         assert(k>=1);
         this->k = k;
     }
 
-    ~ML_Ang(){
+    ~Knn_Ang(){
 
     }
 
-    ML_Ang fit(vector<vector<T>> x_train, vector<T> y_train){
+    Knn_Ang fit(vector<vector<T>> x_train, vector<T> y_train){
         assert(x_train.size() == y_train.size());
         assert(this->k <= x_train.size());
         X_train=MinMatrix<T>(x_train);
@@ -41,7 +44,7 @@ public:
         return *this;
     }
 
-    ML_Ang fit(MinMatrix<T> x_train, MinVector<T> y_train){
+    Knn_Ang fit(MinMatrix<T> x_train, MinVector<T> y_train){
         assert(x_train.size() == y_train.len());
         assert(this->k <= x_train.size());
         int size = x_train.size();
@@ -52,7 +55,7 @@ public:
         return *this;
     }
 
-    friend ostream &operator<<(ostream &out, ML_Ang ml_ang) {
+    friend ostream &operator<<(ostream &out, Knn_Ang ml_ang) {
 
         out << "KNN(k=";
         out << ml_ang.k;
@@ -67,7 +70,8 @@ public:
         assert(X_predict[0].size() == this->X_train[0].len());
 
         vector<T> y_predict;
-        for(int i = 0; i < X_predict.size();++i){
+        auto size = X_predict.size();
+        for(int i = 0; i < size;++i){
             y_predict.push_back(KNN_SINGLE(X_predict[i]));
         }
         return np.array(y_predict);
@@ -77,10 +81,12 @@ public:
         assert(X_train.size()!=0 && Y_train.len()!=0);
         assert(X_predict[0].len() == this->X_train[0].len());
 
-        vector<T> y_predict;
 
-        for(int i = 0; i < X_predict.size();++i){
-            y_predict.push_back(KNN_SINGLE(X_predict[i]));
+        auto size = X_predict.size();
+        vector<T> y_predict(static_cast<unsigned int>(size));
+
+        for(int i = 0; i < size;++i){
+            y_predict[i]=KNN_SINGLE(X_predict[i]);
         }
         return MinVector<T>(y_predict);
     }
@@ -91,11 +97,13 @@ private:
         x = MinVector<T>(xt);
         np = Numpy_Cpp<T>(X_train,Y_train);
         vector<T> distances;
-        for(int i = 0 ; i<X_train.size();++i){
+        auto size = X_train.size();
+        for(int i = 0 ; i<size;++i){
             distances.push_back(X_train[i].euc_distance2(x));
+
         }
         MinVector<T> nearest = np.MatchNum(np.argSort(MinVector<T>(distances)),Y_train);
-        return Add_to_RbTree(nearest,k).sorted()[0][1];
+        return Add_to_RbTree(nearest,this->k).sorted()[0][1];
     }
 
 
@@ -104,54 +112,15 @@ private:
         assert(x.len() == X_train[0].len());
         np = Numpy_Cpp<T>(X_train, Y_train);
         vector<T> distances;
-        for (int i = 0; i < X_train.size(); ++i) {
-            distances.push_back(X_train[i].euc_distance(x));
+
+        auto size = X_train.size();
+        for (int i = 0; i < size; ++i) {
+            distances.push_back(X_train[i].euc_distance2(x));
         }
         auto nearest = np.MatchNum(np.argSort(MinVector<T>(distances)), Y_train);
-        return Add_to_RbTree(nearest, k).sorted()[0][1];
+        return Add_to_RbTree(nearest, this->k).sorted()[0][1];
     }
-
-    T KNN_SINGLE_H(MinVector<T> x) {
-        assert(x.len() == X_train[0].len());
-        np = Numpy_Cpp<T>(X_train, Y_train);
-        vector<T> distances;
-        MinVector<T> m;
-        for (int i = 0; i < X_train.size(); ++i) {
-            auto a = X_train[i].euc_distance2(x);
-            distances.push_back(a);
-        }
-
-        auto nearest = np.MatchNum(np.argSort(MinVector<T>(distances)), Y_train);
-        return Add_to_RbTree(nearest, k).sorted()[0][1];
-    }
-
-    //struct fuc{
-    //    int i;
-    //    vector<T> distances;
-    //    MinVector<T> m;
-    //    MinMatrix<T> X_train;
-    //    MinVector<T> x;
-    //    fuc(int i,vector<T> distances,MinVector<T> m,MinMatrix<T> X_train,MinVector<T> x):i(i),distances(distances),m(m),X_train(X_train),x(x){
-//
-    //    }
-//
-    //    T operator()(){
-    //        auto X_ = X_train[i];
-    //        m.euc_distance3(X_,x);
-    //        return X_;
-    //    }
-    //};
-//
-    //void oops(int i,vector<T> distances,MinVector<T> m,MinMatrix<T> X_train,MinVector<T> x){
-    //    fuc my_func(i,distances,m,X_train,x);
-    //    std::thread my_thread(my_func);
-    //    my_thread.detach();
-    //}
-
-
-
-
-
+    
 private:
 
     MinMatrix<T> Add_to_RbTree(MinVector<T> nearest,int k){
@@ -159,6 +128,7 @@ private:
         double ret = 0.0;
         for (int i = 0; i < k; ++i) {
             ret = nearest[i];
+
             if (rBtree.contains(ret)) {
                 rBtree.set(ret, rBtree.get(ret) + 1);
             } else {
@@ -169,15 +139,19 @@ private:
     }
 
 
+
 public:
     tuple<MinMatrix<T>,MinMatrix<T>,MinVector<T>,MinVector<T>>  train_test_split(MinMatrix<T> X,MinVector<T> y, T test_ratio = 0.2){
         assert(X.shape()[0] == y.len());
 
         MinVector<T> shuffle_indexes = np.shuffle_indexes(X.size());
+
         auto test_size = int(X.size()*test_ratio);
 
         MinVector<T> test_indexes = np.test_indexes(shuffle_indexes,0,test_size);
+
         MinVector<T> train_indexes = np.train_indexes(shuffle_indexes,test_size,shuffle_indexes.len());
+
 
         MinMatrix<T> X_train = X.indexFancy(train_indexes,X);
         MinMatrix<T> X_test = X.indexFancy(test_indexes,X);
@@ -191,11 +165,41 @@ public:
         return newT;
     }
 
+    tuple<MinVector<T>,MinVector<T>,MinVector<T>,MinVector<T>>  train_test_split(MinVector<T> X,MinVector<T> y, T test_ratio = 0.2){
+        assert(X.len() == y.len());
+
+        MinVector<T> shuffle_indexes = np.shuffle_indexes(X.len());
+
+        auto test_size = int(X.len()*test_ratio);
+        auto train_size = X.len() - test_size;
+
+
+        MinVector<T> test_indexes = np.test_indexes(shuffle_indexes,0,test_size);
+        MinVector<T> train_indexes = np.train_indexes(shuffle_indexes,test_size,shuffle_indexes.len());
+
+
+        MinVector<T> X_train = X.indexFancy(train_indexes,X);
+
+        MinVector<T> X_test = X.indexFancy(test_indexes,X);
+
+        MinVector<T> Y_train = y.indexFancy(train_indexes,y);
+
+        MinVector<T> Y_test = y.indexFancy(test_indexes,y);
+
+
+        tuple<MinVector<T>,MinVector<T>,MinVector<T>,MinVector<T>> newT;
+        newT = make_tuple(X_train,X_test,Y_train,Y_test);
+
+
+        return newT;
+    }
+
 
     T sum(MinVector<T> A,MinVector<T> B){
         assert(A.len() == B.len());
         T ret;
-        for( int i = 0; i < A.len(); ++i){
+        auto size = A.len();
+        for( int i = 0; i < size; ++i){
             if(A[i] == B[i]){
                 ret+=1;
             }
@@ -206,7 +210,8 @@ public:
     T Test_Res(MinVector<T> A,MinVector<T> Test){
         assert(A.len() == Test.len());
         T ret;
-        for( int i = 0; i < A.len(); ++i){
+        auto size = A.len();
+        for( int i = 0; i < size; ++i){
             if(A[i] == Test[i]){
                 ret+=1;
             }
@@ -231,6 +236,36 @@ public:
         //return (X_train.size());
     }
 
-};
+    void best_k(){
+        dataSet datasets;
+
+        auto x = MinMatrix<double>(datasets.load_digits_data());
+        auto y = MinVector<double>(datasets.load_digits_target());
+
+        StandardScaler<double> scaler;
+        auto fit = scaler.fit(x);
+        auto X = fit.tranform(x);
+
+        T best_socore = 0.0;
+        int bestK = -1;
+
+        for(int i = 1; i < 5; ++i){
+            Knn_Ang<T> ml_ang(i);
+            auto bS = ml_ang.Socore(X,y);
+            if(bS>best_socore){
+                best_socore = bS;
+                bestK = i;
+            }
+
+        }
+
+        cout<<"Best_K  "<<bestK<<endl;
+        cout<<"BestS   "<<best_socore<<endl;
+    }
+
+
+
+
+
 
 #endif //ML_CPP_ML_ANG_H
