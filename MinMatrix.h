@@ -1,4 +1,6 @@
-
+//
+// Created by john on 2018-8-1.
+//
 
 #ifndef LINEARALGEBRA2_MINMATRIX_H
 #define LINEARALGEBRA2_MINMATRIX_H
@@ -90,7 +92,7 @@ public:
         return 2;
     }
 
-    MinVector<A> row_vector(int index) {
+    MinVector<A> row_vector(A index) {
         return MinVector<A>(vec[index]);
     }
 
@@ -172,6 +174,16 @@ public:
         }
         return MinMatrix<A>(newVec);
 
+    }
+
+    MinMatrix<A> sub_b(MinMatrix<A> matrix){
+        assert(this->shape()[1] == matrix.shape()[1]);
+       auto size = this->shape()[0];
+       auto size2 = matrix.shape()[0];
+       for(int i = 0; i < size; ++i){
+           this->vec[i][0] = this->vec[i][0]-matrix[i][0];
+       }
+        return *this;
     }
 
     MinMatrix<A> operator-(MinMatrix<A> &matrix) {
@@ -352,16 +364,41 @@ public:
         return MinMatrix(newVec);
     }
 
+    MinMatrix<A> dot_b(MinMatrix<A> a) {
+        assert(shape()[0] == a.shape()[0]);
+
+        //新矩阵的行数等于=A矩阵的行数
+        auto size = shape()[0];
+        auto size2 = a.shape()[1];
+        auto ret = 0.0;
 
 
-    MinVector<A> dot(MinVector<A> a) {
-        assert(col_num() == a.len());
-        MinVector<A> vecTemp;
-        auto size = col_num();
         for (int i = 0; i < size; i++) {
-            vecTemp._push_back(row_vector(i).dot(a));
+            for (int j = 0; j < size2; j++) {
+                ret+= this->vec[i][j] * a[j][0];
+                this->vec[i] = {ret};
+            }
         }
-        return vecTemp;
+
+
+        return *this;
+    }
+
+    MinMatrix<A> dot_c(MinMatrix<A> a){
+        assert(shape()[0] == a.shape()[0]);
+        auto size = shape()[0];
+        auto size2 = a.shape()[1];
+        auto ret = 0.0;
+
+
+       //for(int i = 0; i < size;++i){
+       //    for(int j = 0 ; j < size2;++j){
+       //        ret += this->vec[i][0] * a[j][i];
+       //        this->vec[i] = {ret};
+       //        cout<<i<<"gg:gg"<<j<<endl;
+       //    }
+       //}
+        return *this;
     }
 
 
@@ -453,6 +490,15 @@ public:
             indexMinMatrix.addMinVector(vec[temp[i]]);
         }
         return indexMinMatrix;
+    }
+
+    MinVector<A> indexFancy_vec(MinVector<A> temp, MinMatrix<A> vec) {
+        MinVector<A> vecd;
+        int size = temp.len();
+        for (int i = 0; i < size; ++i) {
+            vecd._push_back(vec[temp[i]].getitem(0));
+        }
+        return vecd;
     }
 
     MinMatrix<A> operator()(MinVector<A> test,A num){
@@ -620,6 +666,13 @@ template <typename T>
 MinMatrix<T> Matrix(MinVector<T> shape){
     return MinMatrix<T>(shape);
 }
+
+template <typename T>
+MinMatrix<T> Matrix(int num,MinVector<T> vec){
+    return MinMatrix<T>(num,vec);
+}
+
+
 
 
 #endif //LINEARALGEBRA2_MINMATRIX_H
