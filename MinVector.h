@@ -1,3 +1,6 @@
+//
+// Created by john on 2018-7-27.
+//
 
 #ifndef LINEARALGEBRA2_MINVECTOR_H
 #define LINEARALGEBRA2_MINVECTOR_H
@@ -28,6 +31,10 @@ public:
         this->vec = vector1;
     }
 
+    MinVector(T ele){
+        this->vec.push_back(ele);
+    }
+
 
     ~MinVector() {
 
@@ -42,7 +49,7 @@ public:
         this->vec.push_back(n);
     }
 
-    T getitem(int index) {
+    T getitem(T index) {
         return this->vec[index];
     }
 
@@ -200,7 +207,7 @@ public:
         return newVec;
     }
 
-    vector<T> sub(MinVector<T> vec) {
+    MinVector<T> sub(MinVector<T> vec) {
         assert(this->vec.size() == vec.vec.size());
 
         vector<T> newVec;
@@ -208,7 +215,7 @@ public:
             newVec.push_back(this->vec[i] - vec[i]);
         }
 
-        return newVec;
+        return MinVector<T>(newVec);
     }
 
     MinVector<T> sub2(vector<T> vec) {
@@ -336,6 +343,20 @@ public:
         }
         return ret + ret2;
     }
+
+    T dot(T k){
+        T ret = 0.0;
+        auto size = this->vec.size();
+        for( int i = 0; i < size; ++i ){
+            ret += this->vec[i] * k;
+        }
+
+        return ret;
+    }
+
+
+
+
 
 
     MinVector<T> truediv(T k) {
@@ -627,7 +648,7 @@ public:
     //     return indexFancy(vec);
     // }
 
-    MinVector<T> indexFancy(MinVector<T> a, MinVector<T> b) {
+    MinVector<T> indexFancy(MinVector<double> a, MinVector<T> b) {
         vector<T> temp;
         int size = a.len();
         for (int i = 0; i < size; ++i) {
@@ -787,4 +808,6 @@ template<typename T>
 MinVector<T> minVector(vector<T> vector1) {
     return MinVector<T>(vector1);
 }
+
+
 #endif //LINEARALGEBRA2_MINVECTOR_H
