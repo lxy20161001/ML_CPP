@@ -285,6 +285,8 @@ public:
     }
 };
 
+
+//这里是多元线性回归的一般方法
 void mul_lin_reg_score() {
     dataSet dSet;
 
@@ -311,6 +313,7 @@ void mul_lin_reg_score() {
 }
 
 
+//随机梯度下降
 double Gradient_Des_Opt(int i,int j){
     dataSet dSet;
 
@@ -342,6 +345,7 @@ double Gradient_Des_Opt(int i,int j){
     return ne;
 }
 
+//运行多次随机梯度下降，获取最优秀的R方
 void best_Gradint_(int start,int size){
     auto big = 0.0;
     for(int i = start ; i < size-1;++i){
