@@ -38,6 +38,8 @@ T r2_score(MinVector<T> y_predict, MinVector<T> Y_test) {
     return 1 - mse_test(y_predict, Y_test) / np.var(Y_test);
 }
 
+
+//简单线性回归
 template<typename T>
 class sim_linear_reg {
 private:
@@ -102,6 +104,9 @@ sim_linear_reg<T> Sim_linear_reg(MinVector<T> x, MinVector<T> y) {
     return sim_linear_reg<T>(x, y);
 }
 
+
+
+//多元线性回归
 template<typename T>
 class LinearRegression {
 public:
@@ -152,6 +157,8 @@ public:
         return X_b.T().dot(X_b.dot(theta).sub_b(y)) * 2 / y.shape()[0];
     }
 
+    
+    //随机梯度下降
     LinearRegression fit_sgd(MinMatrix<T> X_train, MinMatrix<T> y_train, T n_iters = 100, T t0 = 5, T t1 = 50,T per=1) {
         assert(X_train.shape()[0] == y_train.shape()[1]);
 
@@ -224,6 +231,8 @@ public:
         return theta;
     }
 
+    
+    //梯度下降法
     LinearRegression fit_gd(MinMatrix<T> X_train, MinMatrix<T> y_train, T eta = 0.01, T n_iters = 100) {
         assert(X_train.shape()[0] == y_train.shape()[1]);
 
