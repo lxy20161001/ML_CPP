@@ -1,13 +1,11 @@
 //
-// Created by john on 2018-9-6.
+// Created by john on 2018-10-12.
 //
 
-#ifndef ML_CPP_STANDARDSCALER_H
-#define ML_CPP_STANDARDSCALER_H
+#ifndef NEW_ML_CPP_STANDARDSDCALER_H
+#define NEW_ML_CPP_STANDARDSDCALER_H
 
 #include "Numpy_Cpp.h"
-#include <iostream>
-#include <vector>
 
 template <typename T>
 class StandardScaler{
@@ -22,7 +20,7 @@ public:
     }
 
     StandardScaler fit(MinMatrix<T> X){
-        assert(X.Dim() == 2);
+        assert(X.dim() == 2);
         auto mSize = X.shape()[1];
         for(int i = 0; i < mSize; ++i ){
             this->mean._push_back(np.mean(X.col_vector(i)));
@@ -33,18 +31,20 @@ public:
     }
 
     MinMatrix<T> tranform(MinMatrix<T> X){
-        assert(X.Dim() == 2);
-        assert(X.shape()[1] == this->mean.len());
-        MinMatrix<T> resX(X.shape());
+        assert(X.dim() == 2);
+        assert(X.shape()[1] == this->mean._size());
+
 
         auto cSize = X.shape()[1];
-        for( int i = 0 ;i < cSize;++i){
-            resX.col_value_Change(i,(X.col_vector(i)-this->mean[i])/this->scale[i]);
+        auto res_x = vector<vector<T>>(cSize);
+
+        for( int i = 0 ;i < cSize;++i){ 
+            res_x[i] = ((X.col_vector(i)-this->mean[i])/this->scale[i])._vector();
         }
 
-        return resX;
+        return MinMatrix<T>(res_x);
 
     }
 };
 
-#endif //ML_CPP_STANDARDSCALER_H
+#endif //NEW_ML_CPP_STANDARDSDCALER_H
