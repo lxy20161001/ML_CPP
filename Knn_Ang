@@ -1,0 +1,170 @@
+//
+// Created by john on 2018-10-11.
+//
+
+#ifndef NEW_ML_CPP_KNN_ANG_H
+#define NEW_ML_CPP_KNN_ANG_H
+
+#include <iostream>
+#include "LinearSystem.h"
+#include "Numpy_Cpp.h"
+#include "RbTree.h"
+
+using namespace std;
+
+template <typename T>
+class Knn_Ang{
+private:
+    MinVector<T> x;
+    MinMatrix<T> X_Train;
+    MinVector<T> Y_train;
+    Numpy_Cpp<T> np;
+
+public:
+    int k;
+    Knn_Ang() {
+        this->k = 1;
+    }
+
+    explicit Knn_Ang(int _k){
+        assert(_k>=1);
+        this->k = _k;
+    }
+
+    ~Knn_Ang(){
+
+    }
+
+    Knn_Ang fit( vector<vector<T>> x_train, vector<T> y_train){
+        assert(x_train.size() == y_train.size());
+        assert(this->k <= x_train.size());
+
+        X_Train = MinMatrix<T>(x_train);
+        Y_train = MinVector<T>(y_train);
+   
+        return *this;
+    }
+
+    Knn_Ang fit(MinMatrix<T> x_train, MinVector<T> y_train){
+        assert(x_train._Matrix().size() == y_train._size());
+        assert(this->k <= x_train.row_num());
+
+        this->X_Train = x_train;
+        this->Y_train = MinVector<T>(y_train);
+        
+
+        return *this;
+    }
+
+    friend ostream &operator<<(ostream &out, Knn_Ang ml_ang) {
+
+        out << "KNN(k=";
+        out << ml_ang.k;
+
+        out << ")";
+        return out;
+    }
+
+
+
+
+    MinVector<T> predict(vector<vector<T>> X_predict){
+        assert(this->X_Train._Matrix().size()!=0 && Y_train._size()!=0);
+        assert(X_predict[0]._size() == this->X_Train[0]._size());
+
+        auto size = X_predict.size();
+        vector<T> y_predict(size);
+        for( int i = 0; i < size ; ++i){
+            y_predict[i] = Knn_Single(X_predict[i]);
+        }
+
+        return MinVector<T>(y_predict);
+    }
+
+    MinVector<T> predict(MinMatrix<T> X_predict){
+        assert(this->X_Train._Matrix().size()!=0 && Y_train._size()!=0);
+        assert(X_predict[0]._size() == this->X_Train[0]._size());
+
+
+        auto size = X_predict._Matrix().size();
+        vector<T> y_predict(size);
+
+        for(int i = 0; i < size;++i){
+            y_predict[i]=Knn_Single(X_predict[i]);
+        }
+        return MinVector<T>(y_predict);
+    }
+
+private:
+    T Knn_Single(vector<T> xt){
+        assert(xt.size() == X_Train[0]._size());
+        x = MinVector<T>(xt);
+        np = Numpy_Cpp<T>(X_Train,Y_train);
+
+        vector<T> distances(X_Train._Matrix().size());
+        vector<T> dis_num(X_Train._Matrix().size());
+
+        auto size = X_Train._Matrix().size();
+
+        for( int i = 0; i < size; ++i){
+            distances[i] = X_Train[i].euc_disance(x);
+            dis_num[i] = i;
+        }
+
+        MinVector<T> nearest = np._Match_Num(np.argSort(MinVector<T>(distances),dis_num),Y_train);
+
+
+        return Add_to_RbTree(nearest,this->k).sorted()[0][1];
+    }
+
+    T Knn_Single(MinVector<T> xt) {
+        assert(xt._size() == X_Train[0]._size());
+        np = Numpy_Cpp<T>(X_Train, Y_train);
+
+        vector<T> distances(X_Train._Matrix().size());
+        vector<T> dis_num(X_Train._Matrix().size());
+
+        auto size = X_Train._Matrix().size();
+
+        for( int i = 0; i < size; ++i){
+            distances[i] = X_Train[i].euc_disance(xt);
+            dis_num[i] = i;
+        }
+        MinVector<T> nearest = np._Match_Num(np.argSort(MinVector<T>(distances),dis_num),Y_train);
+
+
+        return Add_to_RbTree(nearest, this->k).sorted()[0][1];
+    }
+
+    MinMatrix<T> Add_to_RbTree(MinVector<T> nearest, int k){
+        RBtree<T,T> rBtree;
+        double ret = 0.0;
+        for (int i = 0; i < k; ++i) {
+            ret = nearest[i];
+
+            if (rBtree.contains(ret)) {
+                rBtree.set(ret, rBtree.get(ret) + 1);
+            } else {
+                rBtree.add(ret, 1);
+            }
+        }
+        return MinMatrix<T>(rBtree.PreOrder());
+    }
+
+
+public:
+    T sum_Sorces(MinMatrix<T> y_predict, MinVector<T> y_test){
+        auto _y_predict = this->predict(y_predict);
+        auto sum = 0.0;
+        for( int i = 0; i < y_test._size();++i){
+            if(_y_predict[i] == y_test[i]){
+                sum=sum+1;
+            }
+        }
+
+        return sum/y_test._size();
+    }
+
+};
+
+#endif //NEW_ML_CPP_KNN_ANG_H
