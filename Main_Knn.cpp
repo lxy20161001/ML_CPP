@@ -1,10 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <windows.h>
-#include "ML_Cpp/LinReg/LinearSystem.h"
-#include "ML_Cpp/dataSet/dataSet.h"
-#include "ML_Cpp/data_split/data_split.h"
-#include "ML_Cpp/StandardSDcaler.h"
+#include "LinearSystem.h"
+#include "dataSet.h"
+#include "data_split.h"
+#include "StandardSDcaler.h"
 
 
 int main() {
