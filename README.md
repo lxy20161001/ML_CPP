@@ -8,23 +8,19 @@
 
 2、Knn_Ang Knn分类算法的简单实现
 
-3、knn_Thread_help 面向简单knn算法的多线程帮助文件，但非常low，写死了运行13个线程，运用Thread+promise操作；
+3、LinearSystem 提供线性方程组的功能，例如求逆等，暂时还比较少功能
 
-4、LinearSystem 提供线性方程组的功能，例如求逆等，暂时还比较少功能
+4、MinMatrix 实现矩阵功能，以及矩阵运算等，还比较简陋；
 
-5、MinMatrix 实现矩阵功能，以及矩阵运算等，还比较简陋；
+5、MinVector 实现向量功能，暂时和矩阵一样，用到再新写方法；
 
-6、MinVector 实现向量功能，暂时和矩阵一样，用到再新写方法；
+6、Numpy_Cpp 实现一些python Numpy的功能，模仿和学习未目的；
 
-7、Numpy_Cpp 实现一些python Numpy的功能，模仿和学习未目的；
+7、RbTree 简单的红黑树，用于帮助Knn分类
 
-8、RbTree 简单的红黑树，用于帮助Knn分类
+8、 Split_data 创造训练集和测试集
 
-9、SortHelp 简单的排序算法，由于数据量还不是很大，所以就写了选择和希尔排序；
+9、 Standard_Scaler 数据归一化
 
-10 Sim_lin_reg 简单的线性回归和多元线性回归；
 
-11 Split_data 创造训练集和测试集
-
-12 Standard_Scaler 数据归一化
-
+对现有项目进行了小小的重构，把暂时不需要的部分去掉，运行速度接近个人满意的方向；
