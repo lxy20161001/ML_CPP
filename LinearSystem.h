@@ -1,41 +1,48 @@
 //
-// Created by john on 2018-8-22.
+// Created by john on 2018-10-11.
 //
 
-#ifndef ML_CPP_LINEARSYSTEM_H
-#define ML_CPP_LINEARSYSTEM_H
+#ifndef NEW_ML_CPP_LINEARSYSTEM_H
+#define NEW_ML_CPP_LINEARSYSTEM_H
 
-#include "MinMatrix.h"
-#include "MinVector.h"
-#include "MinStatistics.h"
-#include <vector>
-#include <cassert>
+#include "ConMatrix.h"
+#include <tuple>
 
 using namespace std;
 
-template<typename T>
-class LinearSystem {
+template <typename T>
+class LinearSystem{
+    T _m,_n;
+    vector<T> privots;
+
 public:
-    T EPSILON = 1e-010;
     MinMatrix<T> Ab;
-    int _m;
-    int _n;
-    vector<int> pivots;
+    LinearSystem() {
 
-public:
-    LinearSystem(MinMatrix<T> A, MinVector<T> b) {
-        assert(A.size() == b.len());
-
-        _m = A.row_num();
-        _n = A.col_num();
+    }
 
 
-        for (int i = 0; i < _m; ++i) {
-            Ab.addMinVector(A.row_vector(i).AddElem(b.getitem(i)));
+    LinearSystem(MinMatrix<T> A, MinVector<T> b):_m(A.row_num()),_n(A.col_num()){
+        assert(A.row_num() == b._size());
+
+        for( int i = 0 ; i < this->_m; ++i ){
+            A._Matrix()[i].push_back(b[i]);
         }
 
-        pivots = {};
+        Ab = A;
 
+        this->privots = {};
+    }
+
+    LinearSystem(vector<vector<T>> A,vector<T> b):_m(A.size()),_n(A[0].size()){
+        assert(A.size() == b.size());
+        for( int i = 0 ; i < this->_m; ++i ){
+            A[i].push_back(b[i]);
+        }
+
+        Ab = MinMatrix<T>(A);
+
+        this->privots = {};
     }
 
     LinearSystem(MinMatrix<T> A,MinMatrix<T> B){
@@ -45,101 +52,102 @@ public:
         _n = A.col_num();
 
         for (int i = 0; i < _m; ++i) {
-            Ab.addMinVector(A.row_vector(i).AddElem(B[i]));
+            A.addEle(i,B[i]);
         }
 
-        pivots = {};
+        Ab = A;
+
+        this->privots = {};
     }
 
-    LinearSystem(MinMatrix<T> *A, MinVector<T> *b) {
-        assert(A->size() == b->len());
+    LinearSystem(vector<vector<T>> A,vector<vector<T>> B){
+        assert(A.size() == B.size());
 
-        _m = A->row_num();
-        _n = A->col_num();
-
+        _m = A.size();
+        _n = A[0].size();
 
         for (int i = 0; i < _m; ++i) {
-            Ab.addMinVector(A->row_vector(i).AddElem(b->getitem(i)));
+            for( int j = 0; j < _n;++j){
+                A[i].push_back(B[i][j]);
+            }
         }
 
-        pivots = {};
+        Ab = MinMatrix<T>(A);
 
+        this->privots = {};
     }
 
+    LinearSystem(MinMatrix<T> A, vector<T> b):_m(A.row_num()),_n(A.col_num()){
+        assert(A.row_num() == b.size());
 
-    LinearSystem(MinMatrix<T> *A,MinMatrix<T> *B){
-        assert(A->size() == B->size());
-
-        _m = A->row_num();
-        _n = A->col_num();
-
-        for (int i = 0; i < _m; ++i) {
-            Ab.addMinVector(A->row_vector(i).AddElem(B[i]));
+        for( int i = 0 ; i < this->_m; ++i ){
+            A._Matrix()[i].push_back(b[i]);
+            Ab.addVector(A.row_vector(i));
         }
 
-        pivots = {};
+        this->privots = {};
     }
 
-    T _max_row(int index_i, int index_j, int n) {
-        T best = this->Ab[index_i][index_j];
-        T ret = index_i;
-        for (int i = index_i + 1; i < n; ++i) {
-            if (this->Ab[i][index_j] > best) {
+    T _mar_row(int index_i, int index_j, int n){
+        auto best = this->Ab[index_i][index_j];
+        auto ret = index_i;
+        for( int i = index_i; i < n; ++i){
+            if(this->Ab[i][index_j] > best){
                 best = this->Ab[i][index_j];
                 ret = i;
             }
-
         }
+
         return ret;
     }
 
-    void _forward() {
+
+private:
+    void _forward(){
         int i = 0;
         int k = 0;
         int n = this->_m;
 
-        while (i < this->_m && k < this->_n) {
-            auto max_row = this->_max_row(i, k, this->_m);
-            this->Ab.swap_v(i,max_row);
+        while( i < this->_m && k < this->_n){
+            auto max_row = this->_mar_row(i,k,this->_m);
+            swap(this->Ab._Matrix()[i],this->Ab._Matrix()[max_row]);
 
-
-            if (is_zero(this->Ab[i][k])) {
-                k = k + 1;
-            } else {
-                this->Ab.elimination(i, this->Ab[i] / this->Ab[i][k]);
-                for (int j = i + 1; j < n; ++j) {
-                    this->Ab.elimination(j, this->Ab[j].sub(this->Ab[i] * this->Ab[j][k]));
-                }
-                this->pivots.push_back(k);
-                i = i + 1;
+            if(_is_zero(this->Ab[i][k])){
+                k +=1;
             }
 
+            else{
+                this->Ab.elimination(i,this->Ab[i] / this->Ab[i][k]);
+                for( int j = i + 1 ; j < n ; ++j){
+                    this->Ab.elimination(j,this->Ab[j] - ( this->Ab[i] * this->Ab[j][k]));
+                }
+
+                this->privots.push_back(k);
+                i+=1;
+            }
         }
-
-        //return this->Ab;
-
     }
 
     void _backward() {
-        int n = this->pivots.size();
+        int n = this->privots.size();
         for (int i = n - 1; i > -1; i = i - 1) {
             //主元在AB[I][K]的位置
-            T k = this->pivots[i];
+            T k = this->privots[i];
             for (int j = i - 1; j > -1; j = j -1) {
-                this->Ab.elimination(j, this->Ab[j].sub(this->Ab[i] * this->Ab[j][k]));
+                this->Ab.elimination(j, this->Ab[j] - (this->Ab[i] * this->Ab[j][k]));
             }
         }
-        //return this->Ab;
     }
 
-    bool Gj_elem() {
+public:
+    bool Gj_elem(){
         this->_forward();
         this->_backward();
 
-        auto size = pivots.size()-1;
+        auto size = privots.size()-1;
 
         for(int i = size;i < this->_m; ++i){
-            if(this->is_zero(this->Ab[i][Ab[i].len()-1])){
+            if(this->_is_zero(this->Ab[i][Ab[i]._size()-1])){
                 return false;
             }
         }
@@ -156,7 +164,7 @@ public:
     }
 
 private:
-    bool is_zero(T x) {
+    bool _is_zero(T x){
         return abs(x) < EPSILON;
     }
 
@@ -165,6 +173,10 @@ private:
     }
 };
 
+template <typename T>
+bool is_zero(T x) {
+    return abs(x) < EPSILON;
+}
 
 template <typename T>
 MinMatrix<T> inv(MinMatrix<T> A){
@@ -175,7 +187,7 @@ MinMatrix<T> inv(MinMatrix<T> A){
 
     auto size = A.row_num();
 
-    LinearSystem<T> ls(A,MinMatrix<T>().indentity(size));
+    LinearSystem<T> ls(A,MinMatrix<T>().identiry(size));
 
     if(!ls.Gj_elem()){
         cout<<"No solution";
@@ -183,14 +195,61 @@ MinMatrix<T> inv(MinMatrix<T> A){
     };
 
 
-    MinMatrix<T> invA(A.shape());
+    auto invA = MinMatrix<T>().zero(A.shape());
 
     for(int i = 0; i < size;++i){
-        //invA.valueChange(i,ls.Ab[i],size);
         invA.col_value_Change(i,ls.Ab.col_vector(i+size));
     }
 
     return invA;
-    
+
 }
-#endif //ML_CPP_LINEARSYSTEM_H
+
+
+template <typename T>
+tuple<MinMatrix<T>,MinMatrix<T>> LU_mat(MinMatrix<T> mat){
+    assert(mat.shape()[0] == mat.shape()[1]);
+
+    auto n = mat.shape()[0];
+    auto L = MinMatrix<T>().identiry(n);
+    tuple<MinMatrix<T>,MinMatrix<T>> newT;
+
+    for(int i = 0; i < n ; ++i){
+        if(is_zero(mat[i][i])){
+            cout<<"Matrix LU is None None"<<endl;
+            return make_tuple(MinMatrix<T>(),MinMatrix<T>());
+        } else{
+            for( int j = i+1; j < n; ++j ){
+                auto p = mat[j][i]/mat[i][i];
+                mat.row_value_Change(j,mat[j] - mat[i]*p); //A[j] = A[j] - p*A[i]
+                L._Matrix()[j][i] = p;
+            }
+        }
+    }
+    return make_tuple(L,mat);
+}
+
+template <typename T>
+MinMatrix<T> LU(MinMatrix<T> mat){
+    assert(mat.shape()[0] == mat.shape()[1]);
+
+    auto n = mat.shape()[0];
+    auto L = MinMatrix<T>().identiry(n);
+    tuple<MinMatrix<T>,MinMatrix<T>> newT;
+
+    for(int i = 0; i < n ; ++i){
+        if(is_zero(mat[i][i])){
+            cout<<"Matrix LU is None None"<<endl;
+            return MinMatrix<T>();
+        } else{
+            for( int j = i+1; j < n; ++j ){
+                auto p = mat[j][i]/mat[i][i];
+                mat.row_value_Change(j,mat[j] - mat[i]*p); //A[j] = A[j] - p*A[i]
+                L._Matrix()[j][i] = p;
+            }
+        }
+    }
+    return L.dot(mat);
+}
+
+#endif //NEW_ML_CPP_LINEARSYSTEM_H
