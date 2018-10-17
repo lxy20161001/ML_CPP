@@ -6,19 +6,21 @@
 #define NEW_ML_CPP_DATA_SPLIT_H
 
 
-#include "Knn_Ang.h"
+#include "../Knn/Knn_Ang.h"
 
 using namespace std;
 
 
 template<typename T>
 tuple<MinMatrix<T>, MinMatrix<T>, MinVector<T>, MinVector<T>>
-train_test_split(MinMatrix<T> X, MinVector<T> y, T test_ratio=0.2) {
+train_test_split(MinMatrix<T> &X, MinVector<T> &y, T test_ratio=0.2) {
     assert(X._Matrix().size() == y._size());
 
     Numpy_Cpp<T> np;
 
-    MinVector<T> shuffle_indexes=np.shuffle_indexes(X._Matrix().size());
+    auto shuffle_size = X._Matrix().size();
+
+    MinVector<T> shuffle_indexes=np.shuffle_indexes(shuffle_size);
 
     auto test_size=int(X._Matrix().size() * test_ratio);
 
@@ -41,7 +43,7 @@ train_test_split(MinMatrix<T> X, MinVector<T> y, T test_ratio=0.2) {
 
 template<typename T>
 tuple<MinVector<T>, MinVector<T>, MinVector<T>, MinVector<T>>
-train_test_split(MinVector<T> X, MinVector<T> y, T test_ratio=0.2) {
+train_test_split(MinVector<T> &X, MinVector<T> &y, T test_ratio=0.2) {
     assert(X._size() == y._size());
 
     Numpy_Cpp<T> np;
