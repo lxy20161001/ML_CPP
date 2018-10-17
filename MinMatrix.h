@@ -346,7 +346,7 @@ public:
     }
 
 
-    MinMatrix<T> operator()(MinVector<T> test,T num){
+    MinMatrix<T> operator()(MinVector<T> &test,T num){
         auto size = test._size();
         MinMatrix<T> newMat;
         for(int i = 0;i < size; ++i){
