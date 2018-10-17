@@ -28,7 +28,7 @@ public:
 
     }
 
-    MinVector(int num){
+    MinVector(int &num){
         this->vec = vector<T>(num,0);
     }
 
@@ -36,21 +36,22 @@ public:
         return this->vec.size();
     }
 
-    vector<T> _vector(){
+    vector<T> &_vector(){
         return this->vec;
     }
 
-    void _push_back(T k){
+    void _push_back(T &k){
         this->vec.push_back(k);
     }
 
-    T &getitem(int index) {
+    T &getitem(int &index) {
         return vec[index];
     }
 
     T &operator[](int index) {
         return vec[index];
     }
+
 
     void __str__() {
         cout << "Vector : (";
@@ -79,7 +80,9 @@ public:
         return out;
     }
 
-    MinVector &__add__(vector<T> vec) {
+
+
+    MinVector &__add__(vector<T> &vec) {
         assert(this->_size() == vec.size());
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=this->getitem(i) + vec[i];
@@ -87,7 +90,7 @@ public:
         return *this;
     }
 
-    MinVector &operator+(vector<T> vec) {
+    MinVector &operator+(vector<T> &vec) {
         assert(this->_size() == vec.size());
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=this->getitem(i) + vec[i];
@@ -111,7 +114,7 @@ public:
         return *this;
     }
 
-    MinVector &__sub__(vector<T> vec) {
+    MinVector &__sub__(vector<T> &vec) {
         assert(this->_size() == vec.size());
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=this->getitem(i) - vec[i];
@@ -119,7 +122,15 @@ public:
         return *this;
     }
 
-    MinVector &operator-(vector<T> vec) {
+    MinVector<T> __abs_sub__(MinVector<T> &b){
+        assert(this->vec.size() == b.vec.size());
+        for (int i=0; i < this->_size(); ++i) {
+            this->getitem(i)=abs(this->getitem(i) - b[i]);
+        }
+        return *this;
+    }
+
+    MinVector &operator-(vector<T> &vec) {
         assert(this->_size() == vec.size());
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=this->getitem(i) - vec[i];
@@ -164,6 +175,7 @@ public:
         return *this;
     }
 
+
     MinVector &__rmul__(T k) {
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=k * this->getitem(i);
@@ -171,9 +183,9 @@ public:
         return *this;
     }
 
-    T dot(vector<T> vec) {
+    T dot(vector<T> &vec) {
         assert(this->_size() == vec.size());
-        double ret=0;
+        T ret=0;
         auto size=vec.size();
         for (int i=0; i < size; ++i) {
             ret+=(vec[i] * this->vec[i]);
@@ -183,7 +195,7 @@ public:
 
     T dot(MinVector<T> vec) {
         assert(this->_size() == vec._size());
-        double ret=0;
+        T ret=0;
         auto size=vec._size();
         for (int i=0; i < size; ++i) {
             ret+=(vec[i] * this->vec[i]);
@@ -201,21 +213,21 @@ public:
         return ret;
     }
 
-    MinVector &__div__(T k) {
+    MinVector &__div__(T &k) {
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=this->getitem(i) * 1 / k;
         }
         return *this;
     }
 
-    MinVector &operator/(T k) {
+    MinVector &operator/(T &k) {
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=this->getitem(i) * 1 / k;
         }
         return *this;
     }
 
-    MinVector<T> &operator/(MinVector<T> k) {
+    MinVector<T> &operator/(MinVector<T> &k) {
 
 
         auto size=this->vec.size();
@@ -225,8 +237,13 @@ public:
         return *this;
     }
 
-    MinVector<T> zero(int dim) {
+    MinVector<T> zero(int &dim) {
         vector<T> vec(dim, 0);
+        return MinVector(vec);
+    }
+
+    MinVector<T> one(int &dim) {
+        vector<T> vec(dim, 1);
         return MinVector(vec);
     }
 
@@ -248,14 +265,15 @@ public:
     }
 
     MinVector __pos__() {
-        return *this * 1;
+
+        return *this;
     }
 
     MinVector __neg__() {
         return *this * -1;
     }
 
-    T euc_disance(MinVector<T> b){
+    T euc_disance(MinVector<T> &b){
         auto ol = 0.0;
         auto ol2 = 0.0;
         auto size = b._size();
@@ -268,8 +286,10 @@ public:
         return sqrt(ol+ol2);
     }
 
+
+
 public:
-    MinVector argsorted(vector<T> num_index){
+    MinVector argsorted(vector<T> &num_index){
         auto size = this->vec.size();
         if(size < 100){
             return arg_insertionSort(num_index);
@@ -289,7 +309,7 @@ public:
     }
 
 private:
-    MinVector<T> arg_insertionSort(vector<T> indexTemp) {
+    MinVector<T> arg_insertionSort(vector<T> &indexTemp) {
         auto size = this->vec.size();
 
         for (int i = 0; i < size; ++i) {
@@ -321,7 +341,7 @@ private:
         return MinVector(this->vec);
     }
 
-    MinVector<T> arg_shellSort(vector<T> indexTemp) {
+    MinVector<T> arg_shellSort(vector<T> &indexTemp) {
         auto size = this->vec.size();
         int h = 1, i, j;
         while (h < size / 3) {
@@ -365,13 +385,41 @@ private:
         return MinVector(this->vec);
     }
 
+
 public:
-    MinVector<T> indexFancy(MinVector<double> a, MinVector<T> b) {
+    MinVector<T> indexFancy(MinVector<T> &a, MinVector<T> &b) {
 
         int size = a._size();
         MinVector<T> temp(size);
         for (int i = 0; i < size; ++i) {
             temp.vec[i] = b[a[i]];
+        }
+        return temp;
+    }
+
+    MinVector<T> operator()(MinVector<T> &test,T num){
+        auto size = test._size();
+        vector<T> temp;
+        for (int i = 0; i < size; ++i) {
+            if (test[i]< num)
+                temp.push_back(this->vec[i]);
+        }
+
+        return MinVector<T>(temp);
+    }
+
+    MinVector<T> _pow(){
+        for (int i=0; i < this->_size(); ++i) {
+            this->getitem(i)=pow(this->getitem(i),2);
+        }
+        return *this;
+    }
+
+    MinVector _slice_vec(int start,int last){
+        assert(start != last);
+        MinVector temp;
+        for(int i = start;i!=last;++i){
+            temp._push_back(this->vec[i]);
         }
         return temp;
     }
