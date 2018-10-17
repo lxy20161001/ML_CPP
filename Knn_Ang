@@ -6,9 +6,9 @@
 #define NEW_ML_CPP_KNN_ANG_H
 
 #include <iostream>
-#include "LinearSystem.h"
-#include "Numpy_Cpp.h"
-#include "RbTree.h"
+#include "../LinReg/LinearSystem.h"
+#include "../Numpy_Cpp/Numpy_Cpp.h"
+#include "../DataStruct/RbTree.h"
 
 using namespace std;
 
@@ -41,7 +41,7 @@ public:
 
         X_Train = MinMatrix<T>(x_train);
         Y_train = MinVector<T>(y_train);
-   
+
         return *this;
     }
 
@@ -51,7 +51,7 @@ public:
 
         this->X_Train = x_train;
         this->Y_train = MinVector<T>(y_train);
-        
+
 
         return *this;
     }
@@ -81,7 +81,7 @@ public:
         return MinVector<T>(y_predict);
     }
 
-    MinVector<T> predict(MinMatrix<T> X_predict){
+    MinVector<T> predict(MinMatrix<T> &X_predict){
         assert(this->X_Train._Matrix().size()!=0 && Y_train._size()!=0);
         assert(X_predict[0]._size() == this->X_Train[0]._size());
 
@@ -89,14 +89,15 @@ public:
         auto size = X_predict._Matrix().size();
         vector<T> y_predict(size);
 
-        for(int i = 0; i < size;++i){
-            y_predict[i]=Knn_Single(X_predict[i]);
+        for(int i = 0; i < size;i++){
+            auto X_predict_i = X_predict[i];
+            y_predict[i]=Knn_Single(X_predict_i);
         }
         return MinVector<T>(y_predict);
     }
 
 private:
-    T Knn_Single(vector<T> xt){
+    T Knn_Single(vector<T> &xt){
         assert(xt.size() == X_Train[0]._size());
         x = MinVector<T>(xt);
         np = Numpy_Cpp<T>(X_Train,Y_train);
@@ -111,13 +112,15 @@ private:
             dis_num[i] = i;
         }
 
-        MinVector<T> nearest = np._Match_Num(np.argSort(MinVector<T>(distances),dis_num),Y_train);
+        auto _distances = MinVector<T>(distances);
+        auto argSort_cal = np.argSort(_distances,dis_num);
+        MinVector<T> nearest = np._Match_Num(argSort_cal,Y_train);
 
 
         return Add_to_RbTree(nearest,this->k).sorted()[0][1];
     }
 
-    T Knn_Single(MinVector<T> xt) {
+    T Knn_Single(MinVector<T> &xt) {
         assert(xt._size() == X_Train[0]._size());
         np = Numpy_Cpp<T>(X_Train, Y_train);
 
@@ -130,22 +133,27 @@ private:
             distances[i] = X_Train[i].euc_disance(xt);
             dis_num[i] = i;
         }
-        MinVector<T> nearest = np._Match_Num(np.argSort(MinVector<T>(distances),dis_num),Y_train);
+
+        auto _distances = MinVector<T>(distances);
+        auto argSort_cal = np.argSort(_distances,dis_num);
+        MinVector<T> nearest = np._Match_Num(argSort_cal,Y_train);
 
 
         return Add_to_RbTree(nearest, this->k).sorted()[0][1];
     }
 
-    MinMatrix<T> Add_to_RbTree(MinVector<T> nearest, int k){
+    MinMatrix<T> Add_to_RbTree(MinVector<T> &nearest, int &k){
         RBtree<T,T> rBtree;
         double ret = 0.0;
         for (int i = 0; i < k; ++i) {
             ret = nearest[i];
 
             if (rBtree.contains(ret)) {
-                rBtree.set(ret, rBtree.get(ret) + 1);
+                auto rB_new_size = rBtree.get(ret) + 1;
+                rBtree.set(ret, rB_new_size);
             } else {
-                rBtree.add(ret, 1);
+                auto new_i = 1;
+                rBtree.add(ret, new_i);
             }
         }
         return MinMatrix<T>(rBtree.PreOrder());
@@ -153,7 +161,7 @@ private:
 
 
 public:
-    T sum_Sorces(MinMatrix<T> y_predict, MinVector<T> y_test){
+    T sum_Sorces(MinMatrix<T> &y_predict, MinVector<T> &y_test){
         auto _y_predict = this->predict(y_predict);
         auto sum = 0.0;
         for( int i = 0; i < y_test._size();++i){
@@ -164,6 +172,7 @@ public:
 
         return sum/y_test._size();
     }
+
 
 };
 
