@@ -5,7 +5,7 @@
 #ifndef NEW_ML_CPP_LINEARSYSTEM_H
 #define NEW_ML_CPP_LINEARSYSTEM_H
 
-#include "ConMatrix.h"
+#include "MinLinReg/ConMatrix.h"
 #include <tuple>
 
 using namespace std;
@@ -179,7 +179,7 @@ bool is_zero(T x) {
 }
 
 template <typename T>
-MinMatrix<T> inv(MinMatrix<T> A){
+MinMatrix<T> inv(MinMatrix<T> &A){
     if(A.row_num()!=A.col_num()) {
         cout<<"RowNum must be == ColNum";
         return MinMatrix<T>();
@@ -195,10 +195,12 @@ MinMatrix<T> inv(MinMatrix<T> A){
     };
 
 
-    auto invA = MinMatrix<T>().zero(A.shape());
+    auto invA = MinMatrix<T>().zero(A.shape()._vector());
 
     for(int i = 0; i < size;++i){
-        invA.col_value_Change(i,ls.Ab.col_vector(i+size));
+        int _i = i + size;
+        auto vec = ls.Ab.col_vector(_i);
+        invA.col_value_Change(i,vec);
     }
 
     return invA;
@@ -207,7 +209,7 @@ MinMatrix<T> inv(MinMatrix<T> A){
 
 
 template <typename T>
-tuple<MinMatrix<T>,MinMatrix<T>> LU_mat(MinMatrix<T> mat){
+tuple<MinMatrix<T>,MinMatrix<T>> LU_mat(MinMatrix<T> &mat){
     assert(mat.shape()[0] == mat.shape()[1]);
 
     auto n = mat.shape()[0];
@@ -230,7 +232,7 @@ tuple<MinMatrix<T>,MinMatrix<T>> LU_mat(MinMatrix<T> mat){
 }
 
 template <typename T>
-MinMatrix<T> LU(MinMatrix<T> mat){
+MinMatrix<T> LU(MinMatrix<T> &mat){
     assert(mat.shape()[0] == mat.shape()[1]);
 
     auto n = mat.shape()[0];
