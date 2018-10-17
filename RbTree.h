@@ -1,9 +1,9 @@
 //
-// Created by john on 2018-6-8.
+// Created by john on 2018-10-11.
 //
 
-#ifndef BLACK_REDTREE_RBTREE_H
-#define BLACK_REDTREE_RBTREE_H
+#ifndef NEW_ML_CPP_RBTREE_H
+#define NEW_ML_CPP_RBTREE_H
 
 #include <iostream>
 #include <vector>
@@ -80,7 +80,7 @@ public:
 
 private:
 
-    Node* addRec(Node *node,K key,V value){
+    Node* addRec(Node *node,K &key,V &value){
         if(node==0){
             size++;
             return new Node(key,value);
@@ -150,22 +150,22 @@ private:
     }
 
 public:
-    bool contains(K key){
+    bool contains(K &key){
         return getNode(root,key)!= 0;
     }
 
-    V get(K key) {
+    V get(K &key) {
         Node *node = getNode(root,key);
         return node==0?0:node->value;
     }
 
-    V getK(K key) {
+    V getK(K &key) {
         Node *node = getNode(root,key);
         return node==0?0:node->key;
     }
 
 
-    void set(K key,V NewValue){
+    void set(K &key,V &NewValue){
         Node* node = getNode(root,key);
         if(node == 0){
 
@@ -176,7 +176,7 @@ public:
     }
 
 private:
-    Node* getNode(Node* node,K key){
+    Node* getNode(Node* node,K &key){
         if(node == 0) return 0;
         if(key==node->key){
             return node;
@@ -220,6 +220,10 @@ private:
 
     }
 
+
+
+
+
 };
 
-#endif //BLACK_REDTREE_RBTREE_H
+#endif //NEW_ML_CPP_RBTREE_H
