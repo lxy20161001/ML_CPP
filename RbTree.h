@@ -2,75 +2,228 @@
 // Created by john on 2018-10-11.
 //
 
-#ifndef NEW_ML_CPP_DATA_SPLIT_H
-#define NEW_ML_CPP_DATA_SPLIT_H
+#ifndef NEW_ML_CPP_RBTREE_H
+#define NEW_ML_CPP_RBTREE_H
 
-
-#include "../Knn/Knn_Ang.h"
-
+#include <iostream>
+#include <vector>
 using namespace std;
 
 
-template<typename T>
-tuple<MinMatrix<T>, MinMatrix<T>, MinVector<T>, MinVector<T>>
-train_test_split(MinMatrix<T> &X, MinVector<T> &y, T test_ratio=0.2) {
-    assert(X._Matrix().size() == y._size());
 
-    Numpy_Cpp<T> np;
+template <typename K,typename V>
+class RBtree{
+private:
+    vector<vector<K>> temp;
+    const static bool RED = true;
+    const static bool BLACK = false;
+    class Node{
+    public:
+        K key;
+        V value;
+        Node *left;
+        Node *right;
+        bool color;
 
-    auto shuffle_size = X._Matrix().size();
-
-    MinVector<T> shuffle_indexes=np.shuffle_indexes(shuffle_size);
-
-    auto test_size=int(X._Matrix().size() * test_ratio);
-
-    MinVector<T> test_indexes=np.test_indexes(shuffle_indexes, 0, test_size);
-
-    MinVector<T> train_indexes=np.train_indexes(shuffle_indexes, test_size, shuffle_indexes._size());
-
-
-    MinMatrix<T> X_train=X.indexFancy(train_indexes, X);
-    MinMatrix<T> X_test=X.indexFancy(test_indexes, X);
-    MinVector<T> Y_train=y.indexFancy(train_indexes, y);
-    MinVector<T> Y_test=y.indexFancy(test_indexes, y);
-//
-    tuple<MinMatrix<T>, MinMatrix<T>, MinVector<T>, MinVector<T>> newT;
-    newT=make_tuple(X_train, X_test, Y_train, Y_test);
+        Node(K key,V value){
+            this->key = key;
+            this->value = value;
+            left = 0;
+            right = 0;
+            color = RED;
+        }
 
 
-    return newT;
-}
+        ~Node(){
+            delete left;
+            delete right;
+        }
+    };
 
-template<typename T>
-tuple<MinVector<T>, MinVector<T>, MinVector<T>, MinVector<T>>
-train_test_split(MinVector<T> &X, MinVector<T> &y, T test_ratio=0.2) {
-    assert(X._size() == y._size());
+private:
+    Node* root;
+    int size;
 
-    Numpy_Cpp<T> np;
-
-    MinVector<T> shuffle_indexes=np.shuffle_indexes(X._size());
-
-    auto test_size=int(X._size() * test_ratio);
-
-
-    MinVector<T> test_indexes=np.test_indexes(shuffle_indexes, 0, test_size);
-    MinVector<T> train_indexes=np.train_indexes(shuffle_indexes, test_size, shuffle_indexes._size());
-
-
-    MinVector<T> X_train=X.indexFancy(train_indexes, X);
-
-    MinVector<T> X_test=X.indexFancy(test_indexes, X);
-
-    MinVector<T> Y_train=y.indexFancy(train_indexes, y);
-
-    MinVector<T> Y_test=y.indexFancy(test_indexes, y);
+public:
+    RBtree(){
+        root = 0;
+        size = 0;
+    }
+    ~RBtree(){
+        delete  root;
+    }
 
 
-    tuple<MinVector<T>, MinVector<T>, MinVector<T>, MinVector<T>> newT;
-    newT=make_tuple(X_train, X_test, Y_train, Y_test);
+    int getSize(){
+        return size;
+    }
+
+    bool isEmpty(){
+        return size == 0;
+    }
+
+private:
+    bool isRed(Node *node){
+        if(node == 0) return BLACK;
+
+        return node->color;
+        //如果Node为空，那么节点颜色是BLACK
+        //否则返回node的本身颜色
+    }
+
+public:
+    void add(K key,V value){
+        root = addRec(root,key,value);
+        root->color = BLACK;
+    }
 
 
-    return newT;
-}
+private:
 
-#endif //NEW_ML_CPP_DATA_SPLIT_H
+    Node* addRec(Node *node,K &key,V &value){
+        if(node==0){
+            size++;
+            return new Node(key,value);
+            //节点空，实例化一个新的节点，并且size++
+        }
+
+        if(key<node->key){
+            node->left = addRec(node->left,key,value);
+        }
+        else if(key > node->key){
+            node->right = addRec(node->right,key,value);
+        }
+        else{
+            node->value = value;
+        }
+
+        if(isRed(node->right) && !isRed(node->left))//右节点是红色，同时左边节点不是红色
+        {
+                node = leftRotate(node);
+        }
+
+        if(isRed(node->left) && isRed(node->left->left))//左子树的左子树和左子树都是红色
+        {
+                node = rightRotate(node);
+        }
+
+        if(isRed(node->left) && isRed(node->right)){
+                flipColors(node);
+        }
+
+        return node;
+    }
+
+
+    void flipColors(Node *node){
+        //三节点同时还要向上融合的情况下
+        node->color = RED;
+        node->left->color=BLACK;
+        node->right->color=BLACK;
+    }
+
+
+    Node* leftRotate(Node *node){
+        Node *x = node->right;//创造x用于存储node->right
+
+        node->right = x->left;
+        x->left = node;
+
+        x->color = node->color;
+        node->color = RED;//cause node->color is the left node of x,and
+        // is 3-point-node;
+
+        return x;
+    }
+
+    Node* rightRotate(Node* node){
+        Node *x = node->left;
+
+        node->left = x->right;//把x的右节点赋予node
+        x->right = node;//x的右节点现在为空，可以链接新的节点，就是原先的node
+
+        x->color = node->color;
+
+        node->color = RED;
+
+        return x;
+    }
+
+public:
+    bool contains(K &key){
+        return getNode(root,key)!= 0;
+    }
+
+    V get(K &key) {
+        Node *node = getNode(root,key);
+        return node==0?0:node->value;
+    }
+
+    V getK(K &key) {
+        Node *node = getNode(root,key);
+        return node==0?0:node->key;
+    }
+
+
+    void set(K &key,V &NewValue){
+        Node* node = getNode(root,key);
+        if(node == 0){
+
+        }
+        else{
+            node->value = NewValue;
+        }
+    }
+
+private:
+    Node* getNode(Node* node,K &key){
+        if(node == 0) return 0;
+        if(key==node->key){
+            return node;
+        }else if(key<node->key){
+            return getNode(node->left,key);
+        }else{
+            return getNode(node->right,key);
+        }
+    }
+
+public:
+    void toString(){
+        cout<<"{";
+        for (int i = 0; i < getSize(); ++i) {
+            if(i<getSize()-1)
+                cout << get(i) << ":" << getK(i)<<",";
+            else
+                cout << get(i) << ":" << getK(i);
+        }
+        cout<<"}";
+        cout<<endl;
+    }
+
+public:
+    vector<vector<K>>  PreOrder(){
+        PreOrderRec(root);
+        return temp;
+    }
+    void PrintNode(Node* node){
+        if(node == NULL)
+            return;
+        temp.push_back({node->value,node->key});
+    }
+private:
+    void PreOrderRec(Node* node){
+        if(node == NULL){
+            return;}
+        PrintNode(node);
+        PreOrderRec(node->left);
+        PreOrderRec(node->right);
+
+    }
+
+
+
+
+
+};
+
+#endif //NEW_ML_CPP_RBTREE_H
