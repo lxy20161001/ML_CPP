@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <ctime>
-#include "LinearSystem.h"
+#include "../LinReg/LinearSystem.h"
 
 using namespace std;
 
@@ -24,16 +24,16 @@ public:
     Numpy_Cpp(){
 
     }
-    Numpy_Cpp(MinMatrix<T> vec,MinVector<T> vec2){
+    Numpy_Cpp(MinMatrix<T> &vec,MinVector<T> &vec2){
         matrix = vec;
         minVector = vec2;
     }
 
-    MinVector<T> argSort(MinVector<T> x,vector<T> num_index){
+    MinVector<T> argSort(MinVector<T> &x,vector<T> &num_index){
         return x.argsorted(num_index);
     }
 
-    MinVector<T> _Match_Num(MinVector<T> nearest,MinVector<T> Y_train){
+    MinVector<T> _Match_Num(MinVector<T> &nearest,MinVector<T> &Y_train){
 
         auto size = nearest._vector().size();
         vector<T> vec(size);
@@ -45,7 +45,7 @@ public:
 
     MinVector<T> shuffle_indexes(int num){
         srand(static_cast<unsigned int>(time(NULL)));
-        vector<T> r(static_cast<unsigned int>(num));
+        vector<T> r(num);
         for(int i = 0; i < num; ++i){
             r[i] = rand()%num;
 
@@ -53,7 +53,7 @@ public:
         return MinVector<T>(r);
     }
 
-    MinVector<T> test_indexes(MinVector<T> shuffle,int start = 0, int _end = 0){
+    MinVector<T> test_indexes(MinVector<T> &shuffle,int start = 0, int _end = 0){
         vector<T> temp;
         for(int i = start; i < _end; ++i){
             temp.push_back(shuffle[i]);
@@ -61,7 +61,7 @@ public:
         return MinVector<T>(temp);
     }
 
-    MinVector<T> train_indexes(MinVector<T> shuffle,int start = 0, int _end = 0){
+    MinVector<T> train_indexes(MinVector<T> &shuffle,int start = 0, int _end = 0){
         vector<T> temp;
         for(int i = start; i < (_end); ++i){
             temp.push_back(shuffle[i]);
@@ -69,7 +69,7 @@ public:
         return MinVector<T>(temp);
     }
 
-    T sum(MinVector<T> vec){
+    T sum(MinVector<T> &vec){
         T ret = 0.0;
         auto size = vec._size();
         for(int i = 0; i < size; ++i){
@@ -93,7 +93,7 @@ public:
         return ret/(size-1);
     }
 
-    T std(MinVector<T> vec){
+    T std(MinVector<T> &vec){
         return sqrt(var(vec));
     }
 
