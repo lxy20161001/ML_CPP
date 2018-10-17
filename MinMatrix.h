@@ -25,6 +25,12 @@ public:
         vec={};
     }
 
+    MinMatrix(int num,MinVector<T> vec){
+        for(int i = 0; i < num;++i){
+            this->vec.push_back(vec._vector());
+        }
+    }
+
     T dim(){
         return 2;
     }
@@ -54,6 +60,24 @@ public:
         return matrix;
     }
 
+    MinMatrix ones(int r,int c){
+        MinMatrix matrix;
+        for(int i = 0 ; i < r; ++i){
+            matrix.addVector(MinVector<T>().one(c));
+        }
+        return matrix;
+    }
+
+    MinMatrix zero(vector<T> shape){
+        int r = shape[0];
+        int c = shape[1];
+        MinMatrix matrix;
+        for(int i = 0 ; i < r; ++i){
+            matrix.addVector(MinVector<T>().zero(c));
+        }
+        return matrix;
+    }
+
     MinMatrix zero(MinVector<T> shape){
         int r = shape[0];
         int c = shape[1];
@@ -63,6 +87,7 @@ public:
         }
         return matrix;
     }
+
 
     MinMatrix identiry(int n){
         auto _zero = this->zero(n,n);
@@ -82,22 +107,27 @@ public:
         return this->vec[index];
     }
 
-    MinVector<T> col_vector(int index) {
+    MinVector<T> col_vector(int &index) {
         auto size=vec.size();
-        MinVector<T> col(size);
+        vector<T> col(size);
         for (int i=0; i < size; ++i) {
             col[i]=vec[i][index];
         }
-        return col;
+        return MinVector<T>(col);
+    }
+
+    T __getitem__(int &r, int &c) {
+        return this->vec[r][c];
     }
 
     T __getitem__(int r, int c) {
         return this->vec[r][c];
     }
 
-    T __getitem__(vector<T> vec) {
+    T __getitem__(vector<T> &vec) {
         return this->vec[vec[0]][vec[1]];
     }
+
 
     T row_num() {
         return this->vec.size();
@@ -112,12 +142,12 @@ public:
     }
 
     T size() {
-        return this->vec.size() * this->vec[0].size();
+        return this->vec.size();
     }
 
 
 
-    friend ostream &operator<<(ostream &out, MinMatrix<T> matrix) {
+    friend ostream &operator<<(ostream &out, MinMatrix<T> &matrix) {
 
         out << "Matrix : (" << endl;
         for (int i=0; i < matrix.vec.size(); i++) {
@@ -160,6 +190,7 @@ public:
         }
         return *this;
     }
+
 
     MinMatrix &operator-(MinMatrix &matrix) {
         assert(this->shape()[0] == matrix.shape()[0] && this->shape()[1] == matrix.shape()[1]);
@@ -205,7 +236,7 @@ public:
         return *this * -1;
     }
 
-    MinMatrix dot(MinMatrix matrix) {
+    MinMatrix dot(MinMatrix &matrix) {
         assert(this->col_num() == matrix.row_num());
         auto size=row_num();
         auto size2=matrix.col_num();
@@ -219,7 +250,6 @@ public:
             vec[i]=vec_c;
         }
         return MinMatrix(vec);
-        //矩阵点乘=》行 乘以 列
     }
 
     MinVector<T> dot(MinVector<T> vec) {
@@ -245,18 +275,18 @@ public:
     }
 
 
-    void elimination( int num , MinVector<T> ele){
+    void elimination( int num , MinVector<T> &ele){
         this->vec[num] = ele._vector();
     }
 
-    void col_value_Change(int num,MinVector<T> col_vector){
+    void col_value_Change(int num,MinVector<T> &col_vector){
         auto size = this->vec.size();
         for(int i = 0; i < size; ++i){
             this->vec[i][num] = col_vector[i];
         }
     }
 
-    void row_value_Change(int num,MinVector<T> row_vactor){
+    void row_value_Change(int num,MinVector<T> &row_vactor){
         this->vec[num] = row_vactor._vector();
     }
 
@@ -306,13 +336,26 @@ private:
     }
 
 public:
-    MinMatrix<T> indexFancy(MinVector<T> temp, MinMatrix<T> vec) {
+    MinMatrix<T> indexFancy(MinVector<T> &temp, MinMatrix<T> &vec) {
         vector<vector<T>> index;
         int size = temp._vector().size();
         for (int i = 0; i < size; ++i) {
             index.push_back(vec[temp[i]]._vector());
         }
         return MinMatrix(index);
+    }
+
+
+    MinMatrix<T> operator()(MinVector<T> test,T num){
+        auto size = test._size();
+        MinMatrix<T> newMat;
+        for(int i = 0;i < size; ++i){
+            if(test[i]<num){
+                newMat.addVector(this->vec[i]);
+            }
+        }
+
+        return newMat;
     }
 
 
