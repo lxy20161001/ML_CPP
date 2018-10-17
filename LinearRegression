@@ -1,257 +1,169 @@
 //
-// Created by john on 2018-10-11.
+// Created by john on 2018-10-16.
 //
 
-#ifndef NEW_ML_CPP_LINEARSYSTEM_H
-#define NEW_ML_CPP_LINEARSYSTEM_H
+#ifndef NEW_ML_CPP_SIMP_LINEAR_REG_H
+#define NEW_ML_CPP_SIMP_LINEAR_REG_H
 
-#include "MinLinReg/ConMatrix.h"
-#include <tuple>
+
+
+#include "../Numpy_Cpp/Numpy_Cpp.h"
+#include <iostream>
 
 using namespace std;
 
+template<typename T>
+T mse_test(MinVector<T> y_predict, MinVector<T> Y_test) {
+    Numpy_Cpp<T> np;
+    auto _mse = (y_predict - Y_test)._pow();
+    return np.sum(_mse) / Y_test._size();
+}
+
+template<typename T>
+T rmse_test(MinVector<T> y_predict, MinVector<T> Y_test) {
+    return sqrt(mse_test(y_predict, Y_test));
+}
+
+template<typename T>
+T mae_test(MinVector<T> y_predict, MinVector<T> Y_test) {
+    Numpy_Cpp<T> np;
+    auto _mae = y_predict.__abs_sub__(Y_test);
+    return np.sum(_mae)/Y_test._size() ;
+}
+
+template<typename T>
+T r2_score(MinVector<T> y_predict, MinVector<T> Y_test) {
+    Numpy_Cpp<T> np;
+    return 1 - mse_test(y_predict, Y_test) /  np.var(Y_test);
+}
+
+
 template <typename T>
-class LinearSystem{
-    T _m,_n;
-    vector<T> privots;
-
-public:
-    MinMatrix<T> Ab;
-    LinearSystem() {
-
-    }
-
-
-    LinearSystem(MinMatrix<T> A, MinVector<T> b):_m(A.row_num()),_n(A.col_num()){
-        assert(A.row_num() == b._size());
-
-        for( int i = 0 ; i < this->_m; ++i ){
-            A._Matrix()[i].push_back(b[i]);
-        }
-
-        Ab = A;
-
-        this->privots = {};
-    }
-
-    LinearSystem(vector<vector<T>> A,vector<T> b):_m(A.size()),_n(A[0].size()){
-        assert(A.size() == b.size());
-        for( int i = 0 ; i < this->_m; ++i ){
-            A[i].push_back(b[i]);
-        }
-
-        Ab = MinMatrix<T>(A);
-
-        this->privots = {};
-    }
-
-    LinearSystem(MinMatrix<T> A,MinMatrix<T> B){
-        assert(A.size() == B.size());
-
-        _m = A.row_num();
-        _n = A.col_num();
-
-        for (int i = 0; i < _m; ++i) {
-            A.addEle(i,B[i]);
-        }
-
-        Ab = A;
-
-        this->privots = {};
-    }
-
-    LinearSystem(vector<vector<T>> A,vector<vector<T>> B){
-        assert(A.size() == B.size());
-
-        _m = A.size();
-        _n = A[0].size();
-
-        for (int i = 0; i < _m; ++i) {
-            for( int j = 0; j < _n;++j){
-                A[i].push_back(B[i][j]);
-            }
-        }
-
-        Ab = MinMatrix<T>(A);
-
-        this->privots = {};
-    }
-
-    LinearSystem(MinMatrix<T> A, vector<T> b):_m(A.row_num()),_n(A.col_num()){
-        assert(A.row_num() == b.size());
-
-        for( int i = 0 ; i < this->_m; ++i ){
-            A._Matrix()[i].push_back(b[i]);
-            Ab.addVector(A.row_vector(i));
-        }
-
-        this->privots = {};
-    }
-
-    T _mar_row(int index_i, int index_j, int n){
-        auto best = this->Ab[index_i][index_j];
-        auto ret = index_i;
-        for( int i = index_i; i < n; ++i){
-            if(this->Ab[i][index_j] > best){
-                best = this->Ab[i][index_j];
-                ret = i;
-            }
-        }
-
-        return ret;
-    }
-
-
+class sim_Linear_Reg{
 private:
-    void _forward(){
-        int i = 0;
-        int k = 0;
-        int n = this->_m;
-
-        while( i < this->_m && k < this->_n){
-            auto max_row = this->_mar_row(i,k,this->_m);
-            swap(this->Ab._Matrix()[i],this->Ab._Matrix()[max_row]);
-
-            if(_is_zero(this->Ab[i][k])){
-                k +=1;
-            }
-
-            else{
-                this->Ab.elimination(i,this->Ab[i] / this->Ab[i][k]);
-                for( int j = i + 1 ; j < n ; ++j){
-                    this->Ab.elimination(j,this->Ab[j] - ( this->Ab[i] * this->Ab[j][k]));
-                }
-
-                this->privots.push_back(k);
-                i+=1;
-            }
-        }
-    }
-
-    void _backward() {
-        int n = this->privots.size();
-        for (int i = n - 1; i > -1; i = i - 1) {
-            //主元在AB[I][K]的位置
-            T k = this->privots[i];
-            for (int j = i - 1; j > -1; j = j -1) {
-                this->Ab.elimination(j, this->Ab[j] - (this->Ab[i] * this->Ab[j][k]));
-            }
-        }
-    }
+    MinVector<T> x;
+    MinVector<T> y;
 
 public:
-    bool Gj_elem(){
-        this->_forward();
-        this->_backward();
+    T a,b;
 
-        auto size = privots.size()-1;
+public:
+    sim_Linear_Reg(MinVector<T> x,MinVector<T> y):x(x),y(y){
 
-        for(int i = size;i < this->_m; ++i){
-            if(this->_is_zero(this->Ab[i][Ab[i]._size()-1])){
-                return false;
-            }
-        }
-        return true;
     }
 
-    void fancy_print() {
-        for (int i = 0; i < this->_m; ++i) {
-            for (int j = 0; j < this->_n; ++j) {
-                cout << this->Ab[i][j] << "    ";
-            }
-            cout << "|" << this->Ab[i][this->_n] << endl;
+    sim_Linear_Reg fit() {
+        Numpy_Cpp<T> np;
+
+        auto x_mean = np.mean(x);
+        auto y_mean = np.mean(y);
+
+        T num = 0.0;
+        T d = 0.0;
+
+        for (int i = 0; i < x._size(); ++i) {
+            num += (x[i] - x_mean) * (y[i] - y_mean);
+            d += pow((x[i] - x_mean), 2);
         }
+
+        this->a = num / d;
+
+        this->b = y_mean - a * x_mean;
+
+        return *this;
+    }
+
+    MinVector<T> predict(MinVector<T> x_predict) {
+        vector<T> array(x_predict._size());
+        auto size = x_predict._size();
+        for (int i = 0; i < size; ++i) {
+            array[i] = this->_predict(x_predict[i]);
+        }
+
+        return MinVector<T>(array);
+    }
+
+    T score(MinVector<T> x_test, MinVector<T> y_test) {
+        auto y_predict = this->predict(x_test);
+        return r2_score(y_predict, y_test);
     }
 
 private:
-    bool _is_zero(T x){
-        return abs(x) < EPSILON;
-    }
-
-    bool is_equal(T a, T b) {
-        return abs(a - b) < EPSILON;
+    T _predict(T x_single) {
+        return this->a * x_single + this->b;
     }
 };
 
-template <typename T>
-bool is_zero(T x) {
-    return abs(x) < EPSILON;
-}
 
 template <typename T>
-MinMatrix<T> inv(MinMatrix<T> &A){
-    if(A.row_num()!=A.col_num()) {
-        cout<<"RowNum must be == ColNum";
-        return MinMatrix<T>();
+class LinearRegression{
+public:
+    MinVector<T> coef;
+    T interception_;
+private:
+    MinVector<T> _theta;
+    Numpy_Cpp<T> np;
+
+public:
+    LinearRegression() {
+
     }
 
-    auto size = A.row_num();
+    LinearRegression fit_normal(MinMatrix<T> X_train, MinVector<T> y_train) {
+        assert(X_train.size() == y_train._size());
 
-    LinearSystem<T> ls(A,MinMatrix<T>().identiry(size));
+        auto X_b = MinMatrix<T>().ones(X_train.size(),
+                                               X_train.col_num() + 1);
 
-    if(!ls.Gj_elem()){
-        cout<<"No solution";
-        return MinMatrix<T>();
-    };
-
-
-    auto invA = MinMatrix<T>().zero(A.shape()._vector());
-
-    for(int i = 0; i < size;++i){
-        int _i = i + size;
-        auto vec = ls.Ab.col_vector(_i);
-        invA.col_value_Change(i,vec);
-    }
-
-    return invA;
-
-}
-
-
-template <typename T>
-tuple<MinMatrix<T>,MinMatrix<T>> LU_mat(MinMatrix<T> &mat){
-    assert(mat.shape()[0] == mat.shape()[1]);
-
-    auto n = mat.shape()[0];
-    auto L = MinMatrix<T>().identiry(n);
-    tuple<MinMatrix<T>,MinMatrix<T>> newT;
-
-    for(int i = 0; i < n ; ++i){
-        if(is_zero(mat[i][i])){
-            cout<<"Matrix LU is None None"<<endl;
-            return make_tuple(MinMatrix<T>(),MinMatrix<T>());
-        } else{
-            for( int j = i+1; j < n; ++j ){
-                auto p = mat[j][i]/mat[i][i];
-                mat.row_value_Change(j,mat[j] - mat[i]*p); //A[j] = A[j] - p*A[i]
-                L._Matrix()[j][i] = p;
-            }
+        auto col_size = X_train.col_num();
+        for (int i = 0; i < col_size; ++i) {
+            auto vec = X_train.col_vector(i);
+            X_b.col_value_Change(i + 1, vec);
         }
+
+        auto one = MinMatrix<T>(1,y_train)._T();
+
+        auto X_b_T_temp = X_b._T().dot(X_b);
+        auto X_b_T = X_b._T();
+        X_b = inv(X_b_T_temp).dot(X_b_T).dot(one);
+
+        int num = 0;
+
+        this->_theta = X_b.col_vector(num);
+
+        this->interception_ = this->_theta[0];
+
+        this->coef = this->_theta._slice_vec(1, this->_theta._size());
+
+        return *this;
     }
-    return make_tuple(L,mat);
-}
 
-template <typename T>
-MinMatrix<T> LU(MinMatrix<T> &mat){
-    assert(mat.shape()[0] == mat.shape()[1]);
+    MinVector<T> predict(MinMatrix<T> X_predict) {
+        assert(X_predict.shape()[1] == this->coef._size());
 
-    auto n = mat.shape()[0];
-    auto L = MinMatrix<T>().identiry(n);
-    tuple<MinMatrix<T>,MinMatrix<T>> newT;
-
-    for(int i = 0; i < n ; ++i){
-        if(is_zero(mat[i][i])){
-            cout<<"Matrix LU is None None"<<endl;
-            return MinMatrix<T>();
-        } else{
-            for( int j = i+1; j < n; ++j ){
-                auto p = mat[j][i]/mat[i][i];
-                mat.row_value_Change(j,mat[j] - mat[i]*p); //A[j] = A[j] - p*A[i]
-                L._Matrix()[j][i] = p;
-            }
+        MinMatrix<T> X_b = MinMatrix<T>().ones(X_predict.size(),
+                                               X_predict.col_num() + 1);
+        auto col_size = X_predict.col_num();
+        for (int i = 0; i < col_size; ++i) {
+            auto vec = X_predict.col_vector(i);
+            X_b.col_value_Change(i + 1,vec );
         }
-    }
-    return L.dot(mat);
-}
 
-#endif //NEW_ML_CPP_LINEARSYSTEM_H
+        auto t = MinMatrix<T>(this->_theta._size(), this->_theta)._T();
+
+        int num = 0;
+
+        return X_b.dot(t).col_vector(num);
+
+    }
+
+    T score(MinMatrix<T> x_test, MinVector<T> y_test) {
+        auto y_predict = this->predict(x_test);
+        return r2_score(y_predict, y_test);
+
+    }
+};
+
+
+
+#endif //NEW_ML_CPP_SIMP_LINEAR_REG_H
