@@ -25,7 +25,7 @@ public:
         vec={};
     }
 
-    MinMatrix(int num,MinVector<T> vec){
+    MinMatrix(int num,MinVector<T> &vec){
         for(int i = 0; i < num;++i){
             this->vec.push_back(vec._vector());
         }
@@ -35,12 +35,17 @@ public:
         return 2;
     }
 
-    MinMatrix &addVector(MinVector<T> vec) {
+    MinMatrix &addVector(MinVector<T> &vec) {
         this->vec.push_back(vec._vector());
         return *this;
     }
 
-    MinMatrix &addEle(int index , MinVector<T> vec){
+    MinMatrix &addVector(MinVector<T> &&vec) {
+        this->vec.push_back(vec._vector());
+        return *this;
+    }
+
+    MinMatrix addEle(int index , MinVector<T> &vec){
         auto size = vec._size();
         for( int i = 0; i < size; ++i ){
             this->vec[index].push_back(vec[i]);
@@ -52,18 +57,29 @@ public:
         return this->vec;
     }
 
-    MinMatrix zero(int r, int c) {
+    MinMatrix zero(int &&r, int &&c) {
         MinMatrix matrix;
         for(int i = 0 ; i < r; ++i){
-            matrix.addVector(MinVector<T>().zero(c));
+            auto zero_ = MinVector<T>().zero(c);
+            matrix.addVector(zero_);
         }
         return matrix;
     }
 
-    MinMatrix ones(int r,int c){
+    MinMatrix zero(int &r, int &c) {
         MinMatrix matrix;
         for(int i = 0 ; i < r; ++i){
-            matrix.addVector(MinVector<T>().one(c));
+            auto zero_ = MinVector<T>().zero(c);
+            matrix.addVector(zero_);
+        }
+        return matrix;
+    }
+
+    MinMatrix ones(int &&r,int &&c){
+        MinMatrix matrix;
+        for(int i = 0 ; i < r; ++i){
+            auto one_ = MinVector<T>().one(c);
+            matrix.addVector(one_);
         }
         return matrix;
     }
@@ -73,7 +89,8 @@ public:
         int c = shape[1];
         MinMatrix matrix;
         for(int i = 0 ; i < r; ++i){
-            matrix.addVector(MinVector<T>().zero(c));
+            auto zero_ = MinVector<T>().zero(c);
+            matrix.addVector(zero_);
         }
         return matrix;
     }
@@ -83,7 +100,8 @@ public:
         int c = shape[1];
         MinMatrix matrix;
         for(int i = 0 ; i < r; ++i){
-            matrix.addVector(MinVector<T>().zero(c));
+            auto zero_ = MinVector<T>().zero(c);
+            matrix.addVector(zero_);
         }
         return matrix;
     }
@@ -98,16 +116,29 @@ public:
     }
 
 
-    MinMatrix &addVector(vector<T> vec) {
+    MinMatrix &addVector(vector<T> &vec) {
         this->vec.push_back(vec);
         return *this;
     }
 
-    MinVector<T> row_vector(int index) {
+    MinVector<T> row_vector(int &index) {
+        return this->vec[index];
+    }
+
+    MinVector<T> row_vector(int &&index) {
         return this->vec[index];
     }
 
     MinVector<T> col_vector(int &index) {
+        auto size=vec.size();
+        vector<T> col(size);
+        for (int i=0; i < size; ++i) {
+            col[i]=vec[i][index];
+        }
+        return MinVector<T>(col);
+    }
+
+    MinVector<T> col_vector(int &&index) {
         auto size=vec.size();
         vector<T> col(size);
         for (int i=0; i < size; ++i) {
@@ -245,31 +276,51 @@ public:
 
         for (int i=0; i < size; ++i) {
             for (int j=0; j < size2; ++j) {
-                vec_c[j]=this->row_vector(i).dot(matrix.col_vector(j));
+                auto mat_col_vector_j = matrix.col_vector(j);
+                vec_c[j]=this->row_vector(i).dot(mat_col_vector_j);
             }
             vec[i]=vec_c;
         }
         return MinMatrix(vec);
     }
 
-    MinVector<T> dot(MinVector<T> vec) {
+    MinMatrix dot(MinMatrix &&matrix) {
+        assert(this->col_num() == matrix.row_num());
+        auto size=row_num();
+        auto size2=matrix.col_num();
+        vector<vector<T>> vec(size);
+        vector<T> vec_c(size2);
+
+        for (int i=0; i < size; ++i) {
+            for (int j=0; j < size2; ++j) {
+                auto mat_col_vector_j = matrix.col_vector(j);
+                vec_c[j]=this->row_vector(i).dot(mat_col_vector_j);
+            }
+            vec[i]=vec_c;
+        }
+        return MinMatrix(vec);
+    }
+
+    MinVector<T> dot(MinVector<T> &vec) {
         assert(this->shape()[1] == vec._size());
         auto size=this->shape()[0];
-        MinVector<T> _vec;
+        auto _vec = MinVector<T>();
         for (int i=0; i < size; ++i) {
-            auto ele=this->col_vector(i).dot(vec);
+            auto ele=this->row_vector(i).dot(vec);
             _vec._push_back(ele);
         }
         return _vec;
         //矩阵和向量点乘 =》 列 乘以 行
     }
 
+
     MinMatrix _T() {
         MinMatrix mat(this->vec);
         MinMatrix matT;
         auto size=this->vec[0].size();
         for (int i=0; i < size; ++i) {
-            matT.addVector(mat.col_vector(i));
+            auto mat_col_i = mat.col_vector(i);
+            matT.addVector(mat_col_i);
         }
         return matT;
     }
@@ -357,7 +408,6 @@ public:
 
         return newMat;
     }
-
 
 };
 
