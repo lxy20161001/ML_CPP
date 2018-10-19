@@ -162,6 +162,55 @@ public:
         return r2_score(y_predict, y_test);
 
     }
+
+    //梯度下降
+    T J(MinVector<T> theta , MinMatrix<T> X_b , MinVector<T> y){
+        try{
+            return np.sum((y - X_b.dot(theta))._pow()) / X_b.size();
+        }catch (exception e){
+            return  1.0/0.0;
+        }
+    }
+
+    MinVector<T> dJ(MinVector<T> &theta , MinMatrix<T> &X_b , MinVector<T> &y){
+        //vector<T> res(theta._vector().size());
+        //res[0] = np.sum(X_b.dot(theta) - y);
+        //for( int i = 1 ; i < theta._vector().size(); ++i){
+        //    res[i] = (X_b.dot(theta) - y).dot(X_b.col_vector(i));
+        //}
+        //auto ret = MinVector<T>(res) * (2.0/y._size());
+        //return ret;
+        auto ret = X_b._T().dot(X_b.dot(theta)- y) * (2./y._size());
+        return ret;
+    }
+
+    MinVector<T> gra_des(MinMatrix<T> &X_b,MinVector<T> &y,MinVector<T> &int_theta,T eta,T n_ites = 1e4,T epslion = 1e-8){
+        auto theta = int_theta;
+        auto cur = 0;
+        while(cur < n_ites){
+
+            auto grad = dJ(theta,X_b,y);
+            auto l_the = theta;
+            theta = theta - grad * eta;
+
+            if(abs(J(theta,X_b,y) - J(l_the,X_b,y))< epslion){
+                break;
+            }
+            cur++;
+        }
+        return theta;
+    }
+
+    LinearRegression fit_gd(MinMatrix<T> &X_train,MinVector<T> &Y_train,T eta = 0.01 ,T n_iters = 1e4){
+        assert(X_train.shape()[0] == Y_train._size());
+        auto X_b = np.hstack(MinMatrix<double>().ones(static_cast<int &&>(X_train.size()), 1), X_train);
+
+        auto init_the = MinVector<double>().zero(static_cast<int &&>(X_b.shape()[1]));
+        this->_theta = gra_des(X_b,Y_train,init_the,eta);
+        this->interception_ = this->_theta[0];
+        this->coef = this->_theta._slice_vec(1,this->_theta._size());
+        return *this;
+    }
 };
 
 
