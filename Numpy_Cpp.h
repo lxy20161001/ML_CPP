@@ -44,7 +44,7 @@ public:
         return MinVector<T>(vec);
     }
 
-    MinVector<T> shuffle_indexes(int num){
+    MinVector<T> shuffle_indexes(const unsigned int &num){
         srand(static_cast<unsigned int>(time(NULL)));
         vector<T> r(num);
         for(int i = 0; i < num; ++i){
@@ -54,7 +54,7 @@ public:
         return MinVector<T>(r);
     }
 
-    MinVector<T> test_indexes(MinVector<T> &shuffle,int start = 0, int _end = 0){
+    MinVector<T> test_indexes(MinVector<T> &shuffle,const int start = 0, const int _end = 0){
         vector<T> temp;
         for(int i = start; i < _end; ++i){
             temp.push_back(shuffle[i]);
@@ -62,7 +62,7 @@ public:
         return MinVector<T>(temp);
     }
 
-    MinVector<T> train_indexes(MinVector<T> &shuffle,int start = 0, int _end = 0){
+    MinVector<T> train_indexes(MinVector<T> &shuffle,const int start = 0, const int _end = 0){
         vector<T> temp;
         for(int i = start; i < (_end); ++i){
             temp.push_back(shuffle[i]);
@@ -70,7 +70,7 @@ public:
         return MinVector<T>(temp);
     }
 
-    T sum(MinVector<T> &vec){
+    T sum(MinVector<T> &vec) {
         T ret = 0.0;
         auto size = vec._size();
         for(int i = 0; i < size; ++i){
@@ -80,7 +80,7 @@ public:
         return ret;
     }
 
-    T sum(MinVector<T> &&vec){
+    T sum(MinVector<T> &&vec) {
         T ret = 0.0;
         auto size = vec._size();
         for(int i = 0; i < size; ++i){
@@ -94,7 +94,7 @@ public:
         return sum(vec)/vec._size();
     }
 
-    T var(MinVector<T> &vec){
+    T var(MinVector<T> &vec)  {
         auto x = mean(vec);
         auto ret = 0.0;
         auto size = vec._size();
@@ -108,7 +108,7 @@ public:
         return sqrt(var(vec));
     }
 
-    MinVector<T> line_space_rand(T &&st,T &&en,T &&size){
+    MinVector<T> line_space_rand(T &&st,T &&en,T size){
         std::mt19937 rng;
         rng.seed(std::random_device()());
         std::uniform_real_distribution<double > dist(st,en);
@@ -129,6 +129,17 @@ public:
         return MinVector<T>(vec);
     }
 
+    MinVector<T> randint(const unsigned &size){
+        //srand(static_cast<unsigned int>(time(NULL)));
+        vector<T> vec;
+        for(int i = 0;i<size;++i){
+            vec.push_back(rand()%size);
+        }
+
+        return MinVector<T>(vec);
+    }
+
+
     MinMatrix<T> hstack(MinMatrix<T> &&a,MinMatrix<T> &b){
         MinMatrix<T> h_stack;
         for( int i = 0; i < a.col_num();++i){
@@ -147,6 +158,9 @@ public:
         matrix1.addVector(vec);
         return matrix1._T();
     }
+
+
+
 };
 
 #endif //NEW_ML_CPP_NUMPY_CPP_H
