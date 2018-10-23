@@ -6,7 +6,6 @@
 #define NEW_ML_CPP_SIMP_LINEAR_REG_H
 
 
-
 #include "../Numpy_Cpp/Numpy_Cpp.h"
 #include <iostream>
 
@@ -15,7 +14,7 @@ using namespace std;
 template<typename T>
 T mse_test(MinVector<T> y_predict, MinVector<T> Y_test) {
     Numpy_Cpp<T> np;
-    auto _mse = (y_predict - Y_test)._pow();
+    auto _mse=(y_predict - Y_test)._pow();
     return np.sum(_mse) / Y_test._size();
 }
 
@@ -27,64 +26,64 @@ T rmse_test(MinVector<T> y_predict, MinVector<T> Y_test) {
 template<typename T>
 T mae_test(MinVector<T> y_predict, MinVector<T> Y_test) {
     Numpy_Cpp<T> np;
-    auto _mae = y_predict.__abs_sub__(Y_test);
-    return np.sum(_mae)/Y_test._size() ;
+    auto _mae=y_predict.__abs_sub__(Y_test);
+    return np.sum(_mae) / Y_test._size();
 }
 
 template<typename T>
-T r2_score(MinVector<T> y_predict, MinVector<T> Y_test) {
+T r2_score(MinVector<T> &y_predict, MinVector<T> &Y_test) {
     Numpy_Cpp<T> np;
-    return 1 - mse_test(y_predict, Y_test) /  np.var(Y_test);
+    return 1 - mse_test(y_predict, Y_test) / np.var(Y_test);
 }
 
 
-template <typename T>
-class sim_Linear_Reg{
+template<typename T>
+class sim_Linear_Reg {
 private:
     MinVector<T> x;
     MinVector<T> y;
 
 public:
-    T a,b;
+    T a, b;
 
 public:
-    sim_Linear_Reg(MinVector<T> x,MinVector<T> y):x(x),y(y){
+    sim_Linear_Reg(MinVector<T> x, MinVector<T> y) : x(x), y(y) {
 
     }
 
     sim_Linear_Reg fit() {
         Numpy_Cpp<T> np;
 
-        auto x_mean = np.mean(x);
-        auto y_mean = np.mean(y);
+        auto x_mean=np.mean(x);
+        auto y_mean=np.mean(y);
 
-        T num = 0.0;
-        T d = 0.0;
+        T num=0.0;
+        T d=0.0;
 
-        for (int i = 0; i < x._size(); ++i) {
-            num += (x[i] - x_mean) * (y[i] - y_mean);
-            d += pow((x[i] - x_mean), 2);
+        for (int i=0; i < x._size(); ++i) {
+            num+=(x[i] - x_mean) * (y[i] - y_mean);
+            d+=pow((x[i] - x_mean), 2);
         }
 
-        this->a = num / d;
+        this->a=num / d;
 
-        this->b = y_mean - a * x_mean;
+        this->b=y_mean - a * x_mean;
 
         return *this;
     }
 
     MinVector<T> predict(MinVector<T> x_predict) {
         vector<T> array(x_predict._size());
-        auto size = x_predict._size();
-        for (int i = 0; i < size; ++i) {
-            array[i] = this->_predict(x_predict[i]);
+        auto size=x_predict._size();
+        for (int i=0; i < size; ++i) {
+            array[i]=this->_predict(x_predict[i]);
         }
 
         return MinVector<T>(array);
     }
 
     T score(MinVector<T> x_test, MinVector<T> y_test) {
-        auto y_predict = this->predict(x_test);
+        auto y_predict=this->predict(x_test);
         return r2_score(y_predict, y_test);
     }
 
@@ -95,8 +94,8 @@ private:
 };
 
 
-template <typename T>
-class LinearRegression{
+template<typename T>
+class LinearRegression {
 public:
     MinVector<T> coef;
     T interception_;
@@ -112,67 +111,67 @@ public:
     LinearRegression fit_normal(MinMatrix<T> X_train, MinVector<T> y_train) {
         assert(X_train.size() == y_train._size());
 
-        auto X_b = MinMatrix<T>().ones(X_train.size(),
-                                               X_train.col_num() + 1);
+        auto X_b=MinMatrix<T>().ones(X_train.size(),
+                                     X_train.col_num() + 1);
 
-        auto col_size = X_train.col_num();
-        for (int i = 0; i < col_size; ++i) {
-            auto vec = X_train.col_vector(i);
+        auto col_size=X_train.col_num();
+        for (int i=0; i < col_size; ++i) {
+            auto vec=X_train.col_vector(i);
             X_b.col_value_Change(i + 1, vec);
         }
 
-        auto one = MinMatrix<T>(1,y_train)._T();
+        auto one=MinMatrix<T>(1, y_train)._T();
 
-        auto X_b_T_temp = X_b._T().dot(X_b);
-        auto X_b_T = X_b._T();
-        X_b = inv(X_b_T_temp).dot(X_b_T).dot(one);
+        auto X_b_T_temp=X_b._T().dot(X_b);
+        auto X_b_T=X_b._T();
+        X_b=inv(X_b_T_temp).dot(X_b_T).dot(one);
 
-        int num = 0;
+        int num=0;
 
-        this->_theta = X_b.col_vector(num);
+        this->_theta=X_b.col_vector(num);
 
-        this->interception_ = this->_theta[0];
+        this->interception_=this->_theta[0];
 
-        this->coef = this->_theta._slice_vec(1, this->_theta._size());
+        this->coef=this->_theta._slice_vec(1, this->_theta._size());
 
         return *this;
     }
 
-    MinVector<T> predict(MinMatrix<T> X_predict) {
+    MinVector<T> predict(const MinMatrix<T> &X_predict) {
         assert(X_predict.shape()[1] == this->coef._size());
 
-        MinMatrix<T> X_b = MinMatrix<T>().ones(X_predict.size(),
-                                               X_predict.col_num() + 1);
-        auto col_size = X_predict.col_num();
-        for (int i = 0; i < col_size; ++i) {
-            auto vec = X_predict.col_vector(i);
-            X_b.col_value_Change(i + 1,vec );
+        MinMatrix<T> X_b=MinMatrix<T>().ones(X_predict.size(),
+                                             X_predict.col_num() + 1);
+        auto col_size=X_predict.col_num();
+        for (int i=0; i < col_size; ++i) {
+            auto vec=X_predict.col_vector(i);
+            X_b.col_value_Change(i + 1, vec);
         }
 
-        auto t = MinMatrix<T>(this->_theta._size(), this->_theta)._T();
+        auto t=MinMatrix<T>(this->_theta._size(), this->_theta)._T();
 
-        int num = 0;
+        int num=0;
 
         return X_b.dot(t).col_vector(num);
 
     }
 
-    T score(MinMatrix<T> x_test, MinVector<T> y_test) {
-        auto y_predict = this->predict(x_test);
+    T score(MinMatrix<T> &x_test, MinVector<T> &y_test) {
+        auto y_predict=this->predict(x_test);
         return r2_score(y_predict, y_test);
 
     }
 
     //梯度下降
-    T J(MinVector<T> theta , MinMatrix<T> X_b , MinVector<T> y){
-        try{
+    T J(MinVector<T> &theta, MinMatrix<T> &X_b, MinVector<T> y) {
+        try {
             return np.sum((y - X_b.dot(theta))._pow()) / X_b.size();
-        }catch (exception e){
-            return  1.0/0.0;
+        } catch (exception e) {
+            return 1.0 / 0.0;
         }
     }
 
-    MinVector<T> dJ(MinVector<T> &theta , MinMatrix<T> &X_b , MinVector<T> &y){
+    MinVector<T> dJ(MinVector<T> &theta, MinMatrix<T> &X_b, MinVector<T> &y) {
         //vector<T> res(theta._vector().size());
         //res[0] = np.sum(X_b.dot(theta) - y);
         //for( int i = 1 ; i < theta._vector().size(); ++i){
@@ -180,20 +179,21 @@ public:
         //}
         //auto ret = MinVector<T>(res) * (2.0/y._size());
         //return ret;
-        auto ret = X_b._T().dot(X_b.dot(theta)- y) * (2./y._size());
+        auto ret=X_b._T().dot(X_b.dot(theta) - y) * (2. / y._size());
         return ret;
     }
 
-    MinVector<T> gra_des(MinMatrix<T> &X_b,MinVector<T> &y,MinVector<T> &int_theta,T eta,T n_ites = 1e4,T epslion = 1e-8){
-        auto theta = int_theta;
-        auto cur = 0;
-        while(cur < n_ites){
+    MinVector<T>
+    gra_des(MinMatrix<T> &X_b, MinVector<T> &y, MinVector<T> &int_theta, T &eta, T &n_ites, T epslion=1e-8) {
+        auto theta=int_theta;
+        auto cur=0;
+        while (cur < n_ites) {
 
-            auto grad = dJ(theta,X_b,y);
-            auto l_the = theta;
-            theta = theta - grad * eta;
+            auto grad=dJ(theta, X_b, y);
+            auto l_the=theta;
+            theta=theta - grad * eta;
 
-            if(abs(J(theta,X_b,y) - J(l_the,X_b,y))< epslion){
+            if (abs(J(theta, X_b, y) - J(l_the, X_b, y)) < epslion) {
                 break;
             }
             cur++;
@@ -201,18 +201,66 @@ public:
         return theta;
     }
 
-    LinearRegression fit_gd(MinMatrix<T> &X_train,MinVector<T> &Y_train,T eta = 0.01 ,T n_iters = 1e4){
+    LinearRegression fit_gd(MinMatrix<T> &X_train, MinVector<T> &Y_train, T eta=0.01, T n_iters=1e4) {
         assert(X_train.shape()[0] == Y_train._size());
-        auto X_b = np.hstack(MinMatrix<double>().ones(static_cast<int &&>(X_train.size()), 1), X_train);
+        auto X_b=np.hstack(MinMatrix<double>().ones(static_cast<int &&>(X_train.size()), 1), X_train);
 
-        auto init_the = MinVector<double>().zero(static_cast<int &&>(X_b.shape()[1]));
-        this->_theta = gra_des(X_b,Y_train,init_the,eta);
-        this->interception_ = this->_theta[0];
-        this->coef = this->_theta._slice_vec(1,this->_theta._size());
+        auto init_the=MinVector<double>().zero(static_cast<int &&>(X_b.shape()[1]));
+        this->_theta=gra_des(X_b, Y_train, init_the, eta, n_iters);
+        this->interception_=this->_theta[0];
+        this->coef=this->_theta._slice_vec(1, this->_theta._size());
         return *this;
     }
-};
 
+    //随机梯度下降
+
+    LinearRegression fit_sgd(MinMatrix<T> &X_train, MinVector<T> &Y_train, T n_iters=5, T t0=5, T t1=50) {
+        assert(X_train.shape()[0] == Y_train._size());
+        assert(n_iters >= 1);
+
+        auto X_b=np.hstack(MinMatrix<double>().ones(static_cast<int &&>(X_train.size()), 1), X_train);
+
+        //auto init_theta=MinVector<double>().zero(X_b.shape()[1]);//初始为0
+        auto init_theta=np.line_space_rand(-1, 1, X_b.shape()[1]);//初始为正太分布的随机数
+
+        this->_theta=sgd(X_b, Y_train, init_theta, n_iters, t0, t1);
+
+        this->coef=this->_theta._slice_vec(1, this->_theta._size());
+
+        return *this;
+    }
+
+
+    MinVector<T> dJ_sgd(MinVector<T> &theta, MinVector<T> &&X_b_i, T &y_i) {
+        auto ret_=X_b_i.dot(theta) - y_i;
+        auto ret=X_b_i * (ret_);
+        return ret * 2;
+        //由于这里X_b_i是一个向量，而(X_b_i.dot(theta) - y_i)是一个数，而非向量，老师原来的做法
+        //是矩阵点乘，我这里就改成向量想法，达到一样的效果。
+    }
+
+    T learning_rate(T &&t, T &t0, T &t1) {
+        return t0 / (t + t1);
+    }
+
+    MinVector<T> sgd(MinMatrix<T> &X_b, MinVector<T> &y, MinVector<T> &init_theta, T &n_iters, T &t0, T &t1) {
+        auto theta=init_theta;
+        const auto size=X_b.size();
+
+
+        for (int i=0; i < n_iters; ++i) {
+            auto indexs=np.shuffle_indexes(size);
+            auto X_b_i=X_b.indexFancy(indexs, X_b);
+            auto y_i=y.indexFancy(indexs, y);
+            for (int j=0; j < size; ++j) {
+                auto grad=dJ_sgd(theta, X_b_i[j], y_i[j]);
+                theta=theta - (grad * learning_rate(i * size + j, t0, t1));
+            }
+        }
+
+        return theta;
+    }
+};
 
 
 #endif //NEW_ML_CPP_SIMP_LINEAR_REG_H
