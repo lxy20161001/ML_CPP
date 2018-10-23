@@ -34,33 +34,38 @@ public:
         this->vec=vector<T>(num, 0);
     }
 
-    MinVector(const MinVector &vec){
-        this->vec = vec.vec;
-    }
+  //  MinVector(const MinVector &vec){
+  //      this->vec = vec.vec;
+  //  }
+//
+  //  MinVector &operator=(const MinVector& n_vec){
+  //      this->vec = n_vec.vec;
+  //      return  *this;
+  //  }
 
 
 
-    int _size() {
+    int _size() const  {
         return this->vec.size();
     }
 
-    vector<T> &_vector() {
+    vector<T> _vector() {
         return this->vec;
     }
 
-    void _push_back(T &k) {
+    void _push_back(const T &k) {
         this->vec.push_back(k);
     }
 
-    void _push_back(T &&k) {
+    void _push_back(const T &&k) {
         this->vec.push_back(k);
     }
 
-    T &getitem(int &index) {
+    T &getitem(const int &index) {
         return vec[index];
     }
 
-    T &operator[](int index) {
+    T &operator[](const int index) {
         return vec[index];
     }
 
@@ -214,7 +219,7 @@ public:
     }
 
 
-    MinVector &operator*(T k) {
+    MinVector &operator*(const T &k) {
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=this->getitem(i) * k;
         }
@@ -229,7 +234,7 @@ public:
     }
 
 
-    MinVector &__rmul__(T k) {
+    MinVector __rmul__(const T k) {
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=k * this->getitem(i);
         }
@@ -239,7 +244,7 @@ public:
     T dot(vector<T> &vec) {
         assert(this->_size() == vec.size());
         T ret=0;
-        auto size=vec.size();
+        auto const size = vec.size();
         for (int i=0; i < size; ++i) {
             ret+=(vec[i] * this->vec[i]);
         }
@@ -249,7 +254,7 @@ public:
     T dot(MinVector<T> &vec) {
         assert(this->_size() == vec._size());
         T ret=0;
-        auto size=vec._size();
+        auto const size = vec._size();
         for (int i=0; i < size; ++i) {
             ret+=(vec[i] * this->vec[i]);
         }
@@ -259,16 +264,16 @@ public:
     T dot(MinVector<T> &&vec) {
         assert(this->_size() == vec._size());
         T ret=0;
-        auto size=vec._size();
+        auto const size = vec._size();
         for (int i=0; i < size; ++i) {
             ret+=(vec[i] * this->vec[i]);
         }
         return ret;
     }
 
-    T dot(T &k) {
+    T dot(const T &k) {
         T ret=0.0;
-        auto size=this->vec.size();
+        auto const size = this->vec.size();
         for (int i=0; i < size; ++i) {
             ret+=this->vec[i] * k;
         }
@@ -276,14 +281,14 @@ public:
         return ret;
     }
 
-    MinVector &__div__(T &k) {
+    MinVector &__div__(const T &k) {
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=this->getitem(i) * 1 / k;
         }
         return *this;
     }
 
-    MinVector &operator/(T &k) {
+    MinVector &operator/(const T &k) {
         for (int i=0; i < this->_size(); ++i) {
             this->getitem(i)=this->getitem(i) * 1 / k;
         }
@@ -293,25 +298,25 @@ public:
     MinVector<T> &operator/(MinVector<T> &k) {
 
 
-        auto size=this->vec.size();
+        auto const size = this->vec.size();
         for (int i=0; i < size; i++) {
             this->getitem(i)=this->getitem(i) * 1 / k[i];
         }
         return *this;
     }
 
-    MinVector<T> zero(int &dim) {
+    MinVector<T> zero(const int &dim) {
         vector<T> vec(dim, 0);
         return MinVector(vec);
     }
 
-    MinVector<T> zero(int &&dim) {
+    MinVector<T> zero(const int &&dim) {
         vector<T> vec(dim, 0);
         return MinVector(vec);
     }
 
 
-    MinVector<T> one(int &dim) {
+    MinVector<T> one(const int &dim) {
         vector<T> vec(dim, 1);
         return MinVector(vec);
     }
@@ -345,7 +350,7 @@ public:
     T euc_disance(MinVector<T> &b) {
         auto ol=0.0;
         auto ol2=0.0;
-        auto size=b._size();
+        auto const size = b._size();
 
         for (int i=0; i < size; i+=2) {
             ol+=pow(this->vec[i] - b[i], 2);
@@ -358,7 +363,7 @@ public:
 
 public:
     MinVector argsorted(vector<T> &num_index) {
-        auto size=this->vec.size();
+        auto const size = this->vec.size();
         if (size < 100) {
             return arg_insertionSort(num_index);
         } else {
@@ -368,7 +373,7 @@ public:
     }
 
     MinVector<T> sorted() {
-        auto size=this->vec.size();
+        auto const size = this->vec.size();
         if (size < 500) {
             return insertionSort();
         } else {
@@ -378,7 +383,7 @@ public:
 
 private:
     MinVector<T> arg_insertionSort(vector<T> &indexTemp) {
-        auto size=this->vec.size();
+        auto const size = this->vec.size();
 
         for (int i=0; i < size; ++i) {
             auto e=this->vec[i];
@@ -396,7 +401,7 @@ private:
 
     MinVector<T> insertionSort() {
 
-        auto size=this->vec.size();
+        auto const size = this->vec.size();
 
         for (int i=0; i < size; ++i) {
             auto e=this->vec[i];
@@ -410,7 +415,7 @@ private:
     }
 
     MinVector<T> arg_shellSort(vector<T> &indexTemp) {
-        auto size=this->vec.size();
+        auto const size = this->vec.size();
         int h=1, i, j;
         while (h < size / 3) {
             h=3 * h + 1;
@@ -434,7 +439,7 @@ private:
 
     MinVector<T> shellSort() {
 
-        auto size=this->vec.size();
+        auto const size = this->vec.size();
 
         int h=1, i, j;
         while (h < size / 3) {
@@ -455,9 +460,9 @@ private:
 
 
 public:
-    MinVector<T> indexFancy(MinVector<T> &a, MinVector<T> &b) {
+    MinVector<T> indexFancy(MinVector<T> &a,MinVector<T> &b) {
 
-        int size=a._size();
+        int const size = a._size();
         MinVector<T> temp(size);
         for (int i=0; i < size; ++i) {
             temp.vec[i]=b[a[i]];
@@ -465,8 +470,8 @@ public:
         return temp;
     }
 
-    MinVector<T> operator()(MinVector<T> &test, T num) {
-        auto size=test._size();
+    MinVector<T> operator()(MinVector<T> &test,const T &&num) {
+        auto const size = test._size();
         vector<T> temp;
         for (int i=0; i < size; ++i) {
             if (test[i] < num)
@@ -482,9 +487,9 @@ public:
         }
         return *this;
     }
-    
 
-    MinVector _slice_vec(int start, int last) {
+
+    MinVector _slice_vec(const int &start, const int &last) {
         assert(start != last);
         MinVector temp;
         for (int i=start; i != last; ++i) {
