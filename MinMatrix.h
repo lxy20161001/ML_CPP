@@ -31,15 +31,6 @@ public:
         }
     }
 
-  //  MinMatrix(const MinMatrix &matrix){
-  //      this->vec = matrix.vec;
-  //  }
-//
-  //  MinMatrix &operator=(const MinMatrix &matrix){
-  //      this->vec = matrix.vec;
-  //      return *this;
-  //  }
-
     T dim() const {
         return 2;
     }
@@ -362,7 +353,6 @@ public:
 
 
 private:
-    //考虑到暂时使用的矩阵比较小，于是使用插入算法
     MinMatrix<T> insertionSort() {
         for (int i = 0; i < this->vec.size(); ++i) {
             vector<T> e = this->vec[i];
