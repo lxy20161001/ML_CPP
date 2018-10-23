@@ -31,7 +31,16 @@ public:
         }
     }
 
-    T dim(){
+  //  MinMatrix(const MinMatrix &matrix){
+  //      this->vec = matrix.vec;
+  //  }
+//
+  //  MinMatrix &operator=(const MinMatrix &matrix){
+  //      this->vec = matrix.vec;
+  //      return *this;
+  //  }
+
+    T dim() const {
         return 2;
     }
 
@@ -45,7 +54,12 @@ public:
         return *this;
     }
 
-    MinMatrix addEle(int index , MinVector<T> &vec){
+    MinMatrix &addVector(vector<T> &vec) {
+        this->vec.push_back(vec);
+        return *this;
+    }
+
+    MinMatrix addEle(int &index , MinVector<T> &vec){
         auto size = vec._size();
         for( int i = 0; i < size; ++i ){
             this->vec[index].push_back(vec[i]);
@@ -57,7 +71,7 @@ public:
         return this->vec;
     }
 
-    MinMatrix zero(int &&r, int &&c) {
+    MinMatrix zero(const int &&r, const int &&c) {
         MinMatrix matrix;
         for(int i = 0 ; i < r; ++i){
             auto zero_ = MinVector<T>().zero(c);
@@ -66,7 +80,7 @@ public:
         return matrix;
     }
 
-    MinMatrix zero(int &r, int &c) {
+    MinMatrix zero(const int &r, const int &c) {
         MinMatrix matrix;
         for(int i = 0 ; i < r; ++i){
             auto zero_ = MinVector<T>().zero(c);
@@ -75,7 +89,7 @@ public:
         return matrix;
     }
 
-    MinMatrix ones(int &&r,int &&c){
+    MinMatrix ones(const int &&r,const int &&c){
         MinMatrix matrix;
         for(int i = 0 ; i < r; ++i){
             auto one_ = MinVector<T>().one(c);
@@ -84,7 +98,7 @@ public:
         return matrix;
     }
 
-    MinMatrix zero(vector<T> shape){
+    MinMatrix zero(const vector<T> &shape){
         int r = shape[0];
         int c = shape[1];
         MinMatrix matrix;
@@ -95,7 +109,7 @@ public:
         return matrix;
     }
 
-    MinMatrix zero(MinVector<T> shape){
+    MinMatrix zero(const MinVector<T> &shape){
         int r = shape[0];
         int c = shape[1];
         MinMatrix matrix;
@@ -107,7 +121,7 @@ public:
     }
 
 
-    MinMatrix identiry(int n){
+    MinMatrix identiry(const int &&n){
         auto _zero = this->zero(n,n);
         for( int i = 0; i < n ; ++i){
             _zero.vec[i][i] = 1;
@@ -116,21 +130,16 @@ public:
     }
 
 
-    MinMatrix &addVector(vector<T> &vec) {
-        this->vec.push_back(vec);
-        return *this;
-    }
-
-    MinVector<T> row_vector(int &index) {
+    MinVector<T> row_vector(const int &index) {
         return this->vec[index];
     }
 
-    MinVector<T> row_vector(int &&index) {
+    MinVector<T> row_vector(const int &&index) {
         return this->vec[index];
     }
 
-    MinVector<T> col_vector(int &index) {
-        auto size=vec.size();
+    MinVector<T> col_vector(const int &index) const  {
+        auto const size = vec.size();
         vector<T> col(size);
         for (int i=0; i < size; ++i) {
             col[i]=vec[i][index];
@@ -138,8 +147,8 @@ public:
         return MinVector<T>(col);
     }
 
-    MinVector<T> col_vector(int &&index) {
-        auto size=vec.size();
+    MinVector<T> col_vector(const int &&index) {
+        auto const size = vec.size();
         vector<T> col(size);
         for (int i=0; i < size; ++i) {
             col[i]=vec[i][index];
@@ -147,32 +156,32 @@ public:
         return MinVector<T>(col);
     }
 
-    T __getitem__(int &r, int &c) {
+    T __getitem__(const int &r, const int &c) {
         return this->vec[r][c];
     }
 
-    T __getitem__(int r, int c) {
+    T __getitem__(const int r, const int c) {
         return this->vec[r][c];
     }
 
-    T __getitem__(vector<T> &vec) {
+    T __getitem__(const vector<T> &vec) {
         return this->vec[vec[0]][vec[1]];
     }
 
 
-    T row_num() {
+    T row_num() const {
         return this->vec.size();
     }
 
-    T col_num() {
+    T col_num() const {
         return this->vec[0].size();
     }
 
-    MinVector<T> shape() {
+    MinVector<T> shape() const {
         return MinVector<T>({this->row_num(), this->col_num()});
     }
 
-    T size() {
+    T size() const {
         return this->vec.size();
     }
 
@@ -259,17 +268,17 @@ public:
         return *this;
     }
 
-    MinMatrix &__pos__() {
+    MinMatrix &__pos__() const  {
         return *this * 1;
     }
 
-    MinMatrix &__neg__() {
+    MinMatrix &__neg__() const {
         return *this * -1;
     }
 
     MinMatrix dot(MinMatrix &matrix) {
         assert(this->col_num() == matrix.row_num());
-        auto size=row_num();
+        auto const size = row_num();
         auto size2=matrix.col_num();
         vector<vector<T>> vec(size);
         vector<T> vec_c(size2);
@@ -286,7 +295,7 @@ public:
 
     MinMatrix dot(MinMatrix &&matrix) {
         assert(this->col_num() == matrix.row_num());
-        auto size=row_num();
+        auto const size = row_num();
         auto size2=matrix.col_num();
         vector<vector<T>> vec(size);
         vector<T> vec_c(size2);
@@ -303,7 +312,7 @@ public:
 
     MinVector<T> dot(MinVector<T> &vec) {
         assert(this->shape()[1] == vec._size());
-        auto size=this->shape()[0];
+        auto const size = this->shape()[0];
         auto _vec = MinVector<T>();
         for (int i=0; i < size; ++i) {
             auto ele=this->row_vector(i).dot(vec);
@@ -317,7 +326,7 @@ public:
     MinMatrix _T() {
         MinMatrix mat(this->vec);
         MinMatrix matT;
-        auto size=this->vec[0].size();
+        auto const size = this->vec[0].size();
         for (int i=0; i < size; ++i) {
             auto mat_col_i = mat.col_vector(i);
             matT.addVector(mat_col_i);
@@ -326,18 +335,18 @@ public:
     }
 
 
-    void elimination( int num , MinVector<T> &ele){
+    void elimination( const int &num , MinVector<T> &ele){
         this->vec[num] = ele._vector();
     }
 
-    void col_value_Change(int num,MinVector<T> &col_vector){
-        auto size = this->vec.size();
+    void col_value_Change(const int &num,MinVector<T> &col_vector){
+        auto const size =  this->vec.size();
         for(int i = 0; i < size; ++i){
             this->vec[i][num] = col_vector[i];
         }
     }
 
-    void row_value_Change(int num,MinVector<T> &row_vactor){
+    void row_value_Change(const int &num,MinVector<T> &row_vactor){
         this->vec[num] = row_vactor._vector();
     }
 
@@ -368,7 +377,7 @@ private:
 
     MinMatrix<T> shellSort(){
         int h = 1,i,j;
-        int size = this->vec.size();
+        auto const size = this->vec.size();
         vector<T> temp;
         while(h<size/3){
             h = 3*h+1;
@@ -389,7 +398,7 @@ private:
 public:
     MinMatrix<T> indexFancy(MinVector<T> &temp, MinMatrix<T> &vec) {
         vector<vector<T>> index;
-        int size = temp._vector().size();
+        auto const size = temp._vector().size();
         for (int i = 0; i < size; ++i) {
             index.push_back(vec[temp[i]]._vector());
         }
@@ -398,7 +407,7 @@ public:
 
 
     MinMatrix<T> operator()(MinVector<T> &test,T num){
-        auto size = test._size();
+        auto const size = test._size();
         MinMatrix<T> newMat;
         for(int i = 0;i < size; ++i){
             if(test[i]<num){
