@@ -1,0 +1,144 @@
+//
+// Created by john on 2018-10-31.
+//
+
+#ifndef NEW_ML_CPP_POLY_H
+#define NEW_ML_CPP_POLY_H
+
+#include <iostream>
+#include "../StandardSDcaler.h"
+#include "../SimpleLinearRegression/Simp_Linear_Reg.h"
+
+using namespace std;
+
+template<typename T>
+class PolynomialFeatures {
+    int degree;
+    bool test;
+    MinMatrix<T> mat;
+
+public:
+    explicit PolynomialFeatures(int degree) : degree(degree) {
+
+    }
+
+    explicit PolynomialFeatures(bool test) : test(test) {
+
+    }
+
+
+    MinMatrix<T> fit_poly(MinVector<T> &vec) {
+        auto degree=this->degree;
+        this->mat.addVector(vec);
+        for (int i=2; i <= this->degree; ++i) {
+            poly_create_one(i, vec);
+        }
+        this->mat=this->mat._T();
+        return this->mat;
+    }
+
+    MinMatrix<T> fit_poly(MinMatrix<T> &X) {
+        auto degree=this->degree;
+        auto vec = X.col_vector(0);
+        if(this->degree<2)
+            return this->mat;
+        this->mat.addVector(vec);
+        for (int i=2; i <= this->degree; ++i) {
+            poly_create_one(i, vec);
+        }
+        this->mat=this->mat._T();
+        return this->mat;
+    }
+
+    MinMatrix<T> poly_fit_trant(MinMatrix<T> &X) {
+        auto size=this->degree + 1;
+
+        auto x=X.col_vector(0);
+        auto y=X.col_vector(1);
+        auto ones=X.col_vector(0)._pow(0);
+        MinMatrix<T> ret;
+        ret.addVector(ones).addVector(x).addVector(y);
+        for (int i=this->degree, j=0; j < size; i--, j++) {
+            auto add=(x._pow(i)).__mul__i(y._pow(j));
+            ret.addVector(add);
+        }
+        return ret._T();
+    }
+
+    void poly_create_one(int &_degree, MinVector<T> &vec) {
+        this->mat.addVector(vec._pow(_degree));
+    }
+
+
+    T _degree() const {
+        return degree;
+    }
+
+    MinMatrix<T> _mat() {
+        return this->mat;
+    }
+
+};
+
+
+
+
+template<typename T>
+class Pipeline {
+public:
+    StandardScaler<T> *std_scaler;
+    LinearRegression<T> *linearRegression;
+    PolynomialFeatures<T> *poly;
+
+    //TODO 继续丰富PIP的功能和实现
+
+
+public:
+
+    Pipeline(PolynomialFeatures<T> poly,StandardScaler<T> std_scaler, LinearRegression<T> Lin_) :
+            poly(&poly), linearRegression(&Lin_),std_scaler(&std_scaler) {
+
+    }
+
+    Pipeline(){
+
+    }
+
+    //暂时用addPip的方法是比较方便
+    template <typename A>
+    A addPip(A &&a){
+        return move(a);
+    }
+
+    
+    //这里配合构造函数
+    MinMatrix<T> pip_Create(MinVector<T> &vec) {
+        return poly->fit_poly(vec);
+    }
+
+    MinMatrix<T> pip_Create(MinMatrix<T> &X) {
+        return poly->fit_poly(X);
+    }
+
+    LinearRegression<T> fit(MinMatrix<T> &X,MinVector<T> &vec){
+        return linearRegression->fit_normal(X,vec);
+    }
+
+    StandardScaler<T> fit_std(MinMatrix<T> &X){
+        return std_scaler->fit(X);
+    }
+
+    MinVector<T> test_Y(int index , int vector_dim ,MinMatrix<T> &pip_Line,vector<T> &&vector1){
+        auto y__y = MinVector<T>(vector_dim);
+
+        for( int i = 0; i < index ; ++i){
+            y__y = y__y + pip_Line.col_vector(i) * vector1[i];
+        }
+
+        y__y = y__y + Numpy_Cpp<T>().random_engine_normal(0,1,100);
+        return y__y;
+    }
+    
+};
+
+#endif //NEW_ML_CPP_POLY_H
