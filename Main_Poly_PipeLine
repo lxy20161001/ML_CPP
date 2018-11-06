@@ -1,0 +1,73 @@
+#include <iostream>
+#include <utility>
+#include <vector>
+#include <windows.h>
+#include "ML_Cpp/LinReg/LinearSystem.h"
+#include "ML_Cpp/dataSet/dataSet.h"
+#include "ML_Cpp/data_split/data_split.h"
+#include "ML_Cpp/StandardSDcaler.h"
+#include "ML_Cpp/SimpleLinearRegression/Simp_Linear_Reg.h"
+#include "ML_Cpp/PCA/PCA_.h"
+#include "ML_Cpp/poly/poly.h"
+
+
+int main() {
+
+    double time=0;
+    double counts=0;
+    LARGE_INTEGER nFreq;
+    LARGE_INTEGER nBeginTime;
+    LARGE_INTEGER nEndTime;
+    QueryPerformanceFrequency(&nFreq);
+    QueryPerformanceCounter(&nBeginTime);//开始计时
+
+/////////////////////////////
+//构造函数方法//
+    //auto pip=Pipeline<float>(PolynomialFeatures<float>(3), StandardScaler<float>(), LinearRegression<float>());
+    //auto pip_mat=pip.pip_Create(x);
+
+    //auto y__=pip_mat.col_vector(2) * 4 + pip_mat.col_vector(1) * 0.5 + pip_mat.col_vector(0) * 5 + 2 +
+    //         np.random_engine(0, 1, 100);
+    //auto pip_peg=pip.fit(pip_mat, y__);
+
+    //print(pip_peg.coef);
+    //print(pip_peg.interception_);
+///////////////////////////////////
+//addPip做法
+
+    auto x=Numpy_Cpp<float>().random_engine(-3, 3, 100);
+    auto pip_=Pipeline<float>();//实例化Pipeline
+    auto X=pip_.addPip(PolynomialFeatures<float>(2)).fit_poly(x);//插入Poly模块
+    auto y=pip_.test_Y(2, 100, X, {6,2}) + 2;//2 is interception_
+    
+
+    auto new_Data=train_test_split(X, y);
+    auto X_tr=get<0>(new_Data);
+    auto X_test=get<1>(new_Data);
+    auto y_tr=get<2>(new_Data);
+    auto y_test=get<3>(new_Data);
+
+    auto _LinLine=pip_.addPip(LinearRegression<float>()).fit_normal(X, y);
+    auto y_predict = _LinLine.predict(X_test);
+    auto mse = mse_test(y_predict,y_test);
+    print(mse);
+
+    //   ////addPip插入方法比较直观，而且能进行相对模块的链式操作；
+    //   //print(_LinLine.coef);
+    //   //print(_LinLine.interception_);
+    //   //auto y_predict=_LinLine.predict(X);
+    //   //auto mse=mse_test(y_predict, y);
+    //   //print(mse);
+
+    //TODO 继续丰富PIP；
+
+
+
+            QueryPerformanceCounter(&nEndTime);//停止计时
+    time=(double) (nEndTime.QuadPart - nBeginTime.QuadPart) / (double) nFreq.QuadPart;//计算程序执行时间单位为s
+    cout << "time:" << time * 1000 << "ms" << endl;
+
+
+    return 0;
+}
+
