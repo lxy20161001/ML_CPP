@@ -1,0 +1,62 @@
+#include <iostream>
+#include <utility>
+#include <vector>
+#include <windows.h>
+#include "ML_Cpp/LinReg/LinearSystem.h"
+#include "ML_Cpp/dataSet/dataSet.h"
+#include "ML_Cpp/data_split/data_split.h"
+#include "ML_Cpp/StandardSDcaler.h"
+#include "ML_Cpp/SimpleLinearRegression/Simp_Linear_Reg.h"
+#include "ML_Cpp/PCA/PCA_.h"
+
+
+
+int main() {
+
+    double time=0;
+    double counts=0;
+    LARGE_INTEGER nFreq;
+    LARGE_INTEGER nBeginTime;
+    LARGE_INTEGER nEndTime;
+    QueryPerformanceFrequency(&nFreq);
+    QueryPerformanceCounter(&nBeginTime);//开始计时
+
+    ///PCA
+
+   // auto X=MinMatrix<double>();
+   // X.addVector(Numpy_Cpp<double>().random_engine(0, 100, 100));
+   // X.addVector(X[0] * 0.75 + 3. + Numpy_Cpp<double>().line_space_rand(0, 10, 100));
+
+    auto data_Set=dataSet();
+    auto X=MinMatrix<double>(data_Set.load_digits_data());
+    auto y=MinVector<double>(data_Set.load_digits_target());
+
+    auto new_Data=train_test_split(X, y);
+
+    auto X_tr=get<0>(new_Data);
+    auto X_test=get<1>(new_Data);
+    auto y_tr=get<2>(new_Data);
+    auto y_test=get<3>(new_Data);
+
+    auto PCA_ = PCA<double>(10);
+    auto fit_pca = PCA_.fit(X_tr);
+
+    auto X_red = fit_pca.transform(X_tr);
+    auto X_re_test = fit_pca.transform(X_test);
+
+    auto knn_test=Knn_Ang<double>(3);
+    auto fit=knn_test.fit(X_red, y_tr);
+
+    auto res_=fit.sum_Sorces(X_re_test, y_test);
+     cout<<res_<<endl;
+
+
+
+    QueryPerformanceCounter(&nEndTime);//停止计时
+    time=(double) (nEndTime.QuadPart - nBeginTime.QuadPart) / (double) nFreq.QuadPart;//计算程序执行时间单位为s
+    cout << "time:" << time * 1000 << "ms" << endl;
+
+
+    return 0;
+}
+
