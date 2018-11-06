@@ -1,0 +1,139 @@
+//
+// Created by john on 2018-10-26.
+//
+
+#ifndef NEW_ML_CPP_PCA_H
+#define NEW_ML_CPP_PCA_H
+
+#include "../Numpy_Cpp/Numpy_Cpp.h"
+#include <iostream>
+#include <future>
+
+using namespace std;
+
+
+template<typename T>
+class PCA {
+private:
+    T n_componts;
+    MinMatrix<T> componts_;
+    Numpy_Cpp<T> np;
+
+
+public:
+    explicit PCA(const T _n_compots) : n_componts(_n_compots) {
+        assert(_n_compots >= 1);
+    }
+
+private:
+
+    MinMatrix<T> demean(MinMatrix<T> &X) {
+        return X - (np.hstack(np.mean(move(X)), X.row_num(), 1));
+        //数据均值归零
+    }
+
+    T f(MinVector<T> &w, MinMatrix<T> &X) {
+        auto a=np.sum(move((X.dot(move(w)))._pow())) / len(X);
+        return a;
+        //求目标函数
+    }
+
+    MinVector<T> df_math(MinVector<T> &w, MinMatrix<T> &X) {
+        return (X._T().dot(move(X.dot(w)))) * 2. / len(X);
+        //求梯度DF；
+    }
+
+    MinVector<T> direction(MinVector<T> &w) {
+        return w * (1 / w.norm());
+        //求W的方向
+    }
+
+
+    //梯度上升法
+    MinVector<T> first_componet(MinMatrix<T> &X,
+                                MinVector<T> &init_w, T eta, T n_iters=1e4, T epsilon=1e-8) {
+        auto w=direction(init_w);
+        auto cur_iter=0;
+        while (cur_iter < n_iters) {
+
+            auto grad=df_math(w, X);
+            auto last_w=w;
+            w=w + grad * eta;
+            w=direction(w);
+            if (abs(f(w, X) - f(last_w, X)) < epsilon) {
+                break;
+            }
+            cur_iter+=1;
+        }
+
+        return w;
+    }
+
+    MinMatrix<T> _pca(MinMatrix<T> &X_, MinVector<T> &w) {
+        MinMatrix<T> X2;
+        for (int i=0; i < len(X_); ++i) {
+            X2.addVector(move(X_[i] - (w.mul(move((X_[i].dot(w)))))));
+        }
+        return X2;
+    }
+
+    MinMatrix<T> ret_Matrix(MinMatrix<T> &X_pca, T eta=0.01) {
+
+        auto init_w = np.random_engine(-10,10,X_pca.shape()[1]);
+        auto w=first_componet(X_pca, init_w, eta);
+        this->componts_.addVector(w);
+
+        auto ret=_pca(X_pca, w);
+        return ret;
+    }
+
+    void
+    first_n_components(const T &n, MinMatrix<T> &X, T eta=0.01, T n_iters=1e4, T epsilon=1e-8) {
+        auto X_pca=X;
+        X_pca=demean(X_pca);
+        T ret_=0;
+        for (int i=0; i < n; ++i, cout << "fit......" << ret_ / this->n_componts << "%" << endl) {
+            auto ret=ret_Matrix(X_pca, eta);
+            //下周尝试多线程
+            ret_++;
+            X_pca.matrix_change(ret);
+
+        }
+    }
+
+public:
+    PCA fit(MinMatrix<T> &X, T eta=0.01, T n_iters=1e4) {
+        assert(this->n_componts <= X.shape()[1]);
+        // print();
+        first_n_components(this->n_componts, X, eta, n_iters);
+        return *this;
+    }
+
+    MinMatrix<T> transform(MinMatrix<T> X) {
+        assert(X.shape()[1] == this->componts_.shape()[1]);
+        return X.dot(this->componts_._T());
+    }
+
+    MinMatrix<T> inverse_transform(MinMatrix<T> X) {
+        assert(X.shape()[1] == this->componts_.shape()[0]);
+        return X.dot(this->componts_);
+    }
+
+    void print() {
+        cout << "PCA(n_components=" << this->n_componts << ")" << endl;
+        cout << endl;
+    }
+
+    void _components() {
+        cout << this->componts_ << endl;
+    }
+
+    T comp_size() {
+        return n_componts;
+    }
+
+
+};
+
+
+#endif //NEW_ML_CPP_PCA_H
